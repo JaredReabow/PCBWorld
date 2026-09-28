@@ -132,10 +132,10 @@ The staged set is exactly the paths below - 170 files plus this page. It is the
 whole public harness contribution and nothing else: no private board evidence, no
 build output, no virtual environment, no crash log, no cache. Sizes and SHA-256
 digests are of the staged bytes, and the list is what
-`git status --porcelain=v1 --untracked-files=all` reports after the correction
-cycle. The table was generated, not transcribed: each row is the staged blob's
-byte length and digest, and it is reproducible by re-deriving the same manifest
-from the index and comparing it row for row.
+`git status --porcelain=v1 --untracked-files=all` reported after the correction
+cycle. **This table is a historical snapshot of the tree commit `da6eee5`
+records, not a live view of the follow-up tree**: it was generated once, not
+transcribed, and the follow-up deliberately does not regenerate it (section 10).
 
 | path | bytes | sha256 |
 |---|---:|---|
@@ -382,3 +382,65 @@ distinctive token. The two phase-5 documents were corrected only where the scan
 could name a real-board identifier, so this page claims a clean staged set under
 those patterns, not that every phase-5 sentence has been re-derived from its raw
 evidence.
+
+## 10. Post-push receipt, the two corrected counts, and the follow-up tree
+
+This section is the only part of this page written after the commit, and it is
+append-only: sections 1-9 above are left exactly as they were frozen, so they
+still read as the pre-commit packet they record. The receipt and the corrections
+below supersede the statements they name rather than editing them.
+
+**The push happened.** The packet was committed and pushed to the existing fork,
+with no rebase, no tag and no amend:
+
+| field | value |
+|---|---|
+| commit | `da6eee538c5d56a53eab8fa5dd861d67e1ff254f` |
+| tree | `85e79f68ce2562760b09b09c9ce4576799e75d67` - the Astra-accepted tree |
+| parent | `b3d62f5c37e7528670d112e03d9a90029f23f4f3` (single parent, unchanged) |
+| remote | `https://github.com/JaredReabow/PCBWorld.git` |
+| remote tip | `refs/heads/feat/agent-reliability-actions` = `da6eee5...`, from a fresh `git ls-remote origin` |
+| branch shape | 3 commits, 0 merges; `main` still at `b3d62f5` locally and on the remote |
+| local rewrite evidence | branch reflog is `Created from HEAD` then the one commit; the remote-tracking ref has a single `update by push` entry |
+
+That is what local objects and one remote read show. Server-side history is not
+readable from here, so this page claims no more than a direct descendant of the
+published `main` tip with no locally visible rewrite.
+
+The independent verification of that commit is
+`docs/agent-work/reliability/phase29/INTEGRATION_REVIEW.md` (T29IV), which
+re-derived the tree, the 170 manifest rows and the then-current 26 ledger
+bindings from committed objects and re-ran the patch reproduction. Its
+observation O1 is answered here: the "stopped before commit" status at the top of
+this page describes the frozen packet, and commit `da6eee5` reproduces that
+packet byte for byte.
+
+**Two counts in this page were low, and this section corrects them.** The
+independent scan found a third file in the pad-reference bucket: the synthetic
+CLI-report fixture `tests/agent/test_cli_gate.py` carries a pad-plus-component
+description string at line 861, and the same sentence in section 2 already named
+that fixture for its supply-net token, so the bucket is three files and not two.
+The independent scan also found four paths that name the board project without
+the private path, not the two section 7 lists: the two there, plus
+`docs/agent-work/reliability/phase18/PLAN.md` and `pcb_world/agent/runner.py` (a
+default key path under `~/.config`). Both corrections stay inside the
+non-leaking classes section 7 describes - project or workspace names and
+aggregates only, no geometry, net name, item identifier or measurement - so the
+corrected inventory is three pad-reference files and four project-name paths.
+
+**The manifest in section 4 is a historical snapshot.** It is the manifest of the
+tree commit `da6eee5` records, generated once from the index at the freeze, and
+it is deliberately not regenerated against the follow-up tree. This follow-up
+changes exactly four paths - this page, the T29IV review page, the parallelism
+ledger and `HISTORY.md` - so exactly two rows of that table (`HISTORY.md` and the
+ledger) no longer describe the follow-up tree. The strict harness was **not**
+re-run, because no executable byte changed: every source, test and patch path
+still carries the SHA-256 the accepted run measured.
+
+**What this follow-up adds, and what it does not.** One further docs-only commit
+on `feat/agent-reliability-actions`, pushed to the same fork with no rebase, no
+tag and no amend. Its own commit and tree are recorded in the handoff packet
+returned to Astra, because a page cannot carry the hash of the commit that
+contains it. Nothing else moved - no source, no test, no engine patch, no pinned
+binary, no frozen board, rule, project or accepted pointer - and the private
+board workspace was not read.

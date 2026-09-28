@@ -232,6 +232,20 @@
       "path": "docs/agent-work/reliability/phase29/REBASELINE_REVIEW.md",
       "sha256": "4ffee34bb1a2ab679755ebad2344c6c3287bcd9bb99b9632a78159dc0b88d693",
       "kind": "report"
+    },
+    {
+      "id": "art-phase29i-integration",
+      "task_id": "T29I",
+      "path": "docs/agent-work/reliability/phase29/INTEGRATION.md",
+      "sha256": "e6adb896b2737ce1762ac973f1876c52b7804075be7f106850ee5f0f2a567da5",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29iv-review",
+      "task_id": "T29IV",
+      "path": "docs/agent-work/reliability/phase29/INTEGRATION_REVIEW.md",
+      "sha256": "e0d9663f45207a897face4f7daf0d55cb64f167465209c0a263e648783c4500d",
+      "kind": "report"
     }
   ],
   "tasks": [
@@ -2701,7 +2715,7 @@
       "id": "T29I",
       "type": "integration",
       "objective": "After code/evidence freeze, integrate accepted harness changes, version/history and scoped GitHub backup.",
-      "state": "running",
+      "state": "accepted",
       "importance": "important",
       "requirements": [
         "R1",
@@ -2748,21 +2762,166 @@
           ]
         }
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "id": "E29I-final",
+          "acceptance": [
+            "A29I-1",
+            "A29I-2"
+          ],
+          "command": "bash tools/reliability/check_phase.sh --strict --expected-native 146; staged manifest/leak/hash checks; git commit and normal push; git ls-remote origin",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29i-integration",
+          "notes": "Astra accepted tree 85e79f68; commit da6eee5 tree and remote tip match. Strict 640 unit/146 native/patch reconstruction passed before documentation-only redaction; accepted code bytes unchanged."
+        },
+        {
+          "id": "E29I-followup",
+          "acceptance": [
+            "A29I-2"
+          ],
+          "command": "git ls-remote origin; /usr/bin/python3 workflow.py validate --ledger docs/agent-work/reliability/PARALLELISM_LEDGER.json; docs-only follow-up commit and normal push",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29i-integration",
+          "notes": "Post-push receipt appended as INTEGRATION.md section 10: commit da6eee5, tree 85e79f68, real tree/remote read fresh. Follow-up touches only this page, the T29IV review, the ledger and HISTORY.md; no executable byte changed, so no native rerun."
+        }
+      ],
       "owner": {
         "actor": "phase29_integration",
         "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_result_review",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-29",
+        "independent": true,
+        "notes": "Astra accepted T29I after the T29IV independent verification of commit da6eee5 and its two documentation-accuracy observations; the follow-up records the push receipt in INTEGRATION.md section 10 and corrects the O2/O3 counts there. Accepted code bytes are unchanged and the strict harness was not re-run.",
+        "verified_hashes": {
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29c-refresh": "5435a97664338184f8f956957de66a53e5c27b167cc57b84423fa6470f9786a5",
+          "art-phase29c-replay": "a4613dbd3155a94b940d44764cbdb4b148718c4286728ad219269ab2cf7ae08d",
+          "art-phase29cv-refresh": "4ffee34bb1a2ab679755ebad2344c6c3287bcd9bb99b9632a78159dc0b88d693",
+          "art-phase29g-report": "f9b570520bed3aad3ffd68099b342580fdcdfa8b0831f329494b0464eebe351b",
+          "art-phase29gv-review": "f99ce9b9889e33b213cfcb9c72dd26b55336f49013f8ed8b6452cb8141958243",
+          "art-phase29i-integration": "e6adb896b2737ce1762ac973f1876c52b7804075be7f106850ee5f0f2a567da5",
+          "art-phase29p-report": "be07aa3903143b721eb01a5d75cce6333fe2d5506ea33b289635c7e36095778a"
+        }
+      }
+    },
+    {
+      "id": "T29IV",
+      "type": "verification",
+      "objective": "Independently verify the committed and pushed T29I public integration matches the Astra-accepted staged tree, privacy checks and remote state.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "da6eee538c5d56a53eab8fa5dd861d67e1ff254f",
+      "write_paths": [
+        "docs/agent-work/reliability/phase29/INTEGRATION_REVIEW.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase29/INTEGRATION.md"
+      ],
+      "non_goals": [
+        "No source, test, patch, version, board, rule or accepted-pointer writes",
+        "No commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A29IV-1",
+          "criterion": "Commit tree equals accepted staged tree and all 26 artifact bindings, with no private board identifiers or secrets in public bytes.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29IV-2",
+          "criterion": "Remote branch tip equals local commit; push was non-forced, tree and workspace clean; report exact hashes and limits.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29IV-final",
+          "acceptance": [
+            "A29IV-1",
+            "A29IV-2"
+          ],
+          "command": "git rev-parse HEAD^{tree}; manifest re-derivation of 170 rows via git show HEAD:<path>; ledger artifact hashes vs committed blobs; git ls-remote origin; privacy/whitespace scans; python tools/reliability/check_engine_patches.py",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29iv-review",
+          "notes": "Commit tree equals the accepted tree; 170/170 manifest rows and 26/26 then-current ledger bindings re-derived from committed objects; remote tip equals the commit. No force-push claim: server-side history is unreadable, so C4 is bounded to local evidence (single parent, unchanged main, one push reflog entry)."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_integration_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "verifies": [
+        "T29I"
+      ],
+      "review": {
+        "reviewer_actor": "phase29_astra_result_review",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-29",
+        "independent": true,
+        "notes": "Astra accepted T29IV's independent verification of commit da6eee5: tree, 170 manifest rows, then-current ledger bindings, patch reproduction, privacy and whitespace checks, with O1-O4 recorded. C4 (no force-push) is bounded to local evidence and is not asserted as server-side history.",
+        "verified_hashes": {
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29c-refresh": "5435a97664338184f8f956957de66a53e5c27b167cc57b84423fa6470f9786a5",
+          "art-phase29c-replay": "a4613dbd3155a94b940d44764cbdb4b148718c4286728ad219269ab2cf7ae08d",
+          "art-phase29cv-refresh": "4ffee34bb1a2ab679755ebad2344c6c3287bcd9bb99b9632a78159dc0b88d693",
+          "art-phase29g-report": "f9b570520bed3aad3ffd68099b342580fdcdfa8b0831f329494b0464eebe351b",
+          "art-phase29gv-review": "f99ce9b9889e33b213cfcb9c72dd26b55336f49013f8ed8b6452cb8141958243",
+          "art-phase29i-integration": "e6adb896b2737ce1762ac973f1876c52b7804075be7f106850ee5f0f2a567da5",
+          "art-phase29iv-review": "e0d9663f45207a897face4f7daf0d55cb64f167465209c0a263e648783c4500d",
+          "art-phase29p-report": "be07aa3903143b721eb01a5d75cce6333fe2d5506ea33b289635c7e36095778a"
+        }
       }
     }
   ],
   "checkpoint": {
-    "next": "T29C lexical/shared-envelope correction frozen; independent T29CV recheck plus hash discrepancy audit, then Astra acceptance. T30R held.",
+    "next": "T30R private bounded restoration continues on the disposable experimental-candidate lineage; freeze the campaign, dispatch independent T30V, then Astra review and the next routing plan.",
     "open_findings": [
-      "Global canonical atom aliases real numeric and quoted-token changes.",
-      "Missing/nonpositive native process IDs and capture-specific provenance/rule/waiver fields can retain.",
-      "Coverage totals omit raw nodes; tag-name normalization broader than evidenced paths.",
-      "Step envelope glob matches own output and verifier re-run changed that private aggregate; author must repair/re-freeze."
+      "Accepted board remains at 135 unrouted; experimental refilled candidate has original-relative refusals and is not promoted."
     ],
-    "notes": "T29CV independent snapshot audit completed with REQUEST_CHANGES evidence; task queued for re-verification of corrected T29C. Historical review artifact retained; no acceptance."
+    "notes": "T29C/T29CV accepted on the sixth frozen packet. T29I v1.1.0 commit da6eee5 is pushed and independently verified by T29IV; Astra accepted T29I and T29IV, and a docs-only follow-up records the post-push receipt plus the corrected O2/O3 counts. T30R owns only the private disposable routing lineage and the public aggregate report."
   }
 }

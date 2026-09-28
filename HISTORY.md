@@ -2843,3 +2843,64 @@ All 26 hashes the ledger records for accepted artifacts still match their staged
 blobs, and the refreshed per-file manifest in
 `docs/agent-work/reliability/phase29/INTEGRATION.md` matches the staged index row
 for row. The packet stops before the commit again, for Astra's final acceptance.
+
+## 2026-09-29 — the backup verified from committed objects, and the docs-only follow-up
+
+The commit described two entries above is on the fork, and it was checked against
+the objects GitHub holds rather than against the working tree. T29IV read every
+check through `git show HEAD:<path>` and one `git ls-remote`, so its review covers
+the committed bytes: the tree `85e79f68ce2562760b09b09c9ce4576799e75d67` (equal
+to the Astra-accepted tree), the single `b3d62f5` parent, all 170 rows of the
+integration manifest, all 26 artifact bindings the ledger then carried, the 49
+accepted whitespace findings, the remote branch tip, and a fresh privacy scan
+over the 171 committed blobs that found no secret, no coordinate-like geometry
+and no board identifier beyond the project-name and workspace convention the
+reports already declare. It also re-ran the engine patch reproduction, which
+reapplies the five-patch series to the pinned commit and rebuilds nine files
+byte-for-byte. Verdict **PASS**, with four documentation-accuracy observations
+O1-O4 and no leak. Detail:
+[phase 29 INTEGRATION_REVIEW](docs/agent-work/reliability/phase29/INTEGRATION_REVIEW.md).
+
+**Astra accepted both tasks.** T29I and T29IV are `accepted` in the ledger, with
+the accepting review recording the artifact hashes it snapshotted across the
+whole phase-29 closure, and the review page is registered as an artifact of its
+own. The `T30R` entry the checkpoint names is untouched and still running on its
+private disposable lineage; this follow-up neither reads nor writes it.
+
+**The follow-up is documentation-only.** It touches exactly four paths - this
+file, the integration page, the T29IV review page and the parallelism ledger -
+and it carries the post-push receipt the integration page was frozen without:
+the commit, its tree, its parent, the remote and the branch tip read fresh from
+`git ls-remote origin`, with a normal push and no rebase, tag or amend. Two
+counts in that page were low and are corrected rather than left standing: the
+pad-reference bucket is three files, not two, because the synthetic CLI-report
+fixture in `tests/agent/test_cli_gate.py` carries a pad-plus-component
+description string and the same sentence already named that fixture for its
+supply-net token; and four paths name the board project without the private
+path, not two - the two the page listed plus
+`docs/agent-work/reliability/phase18/PLAN.md` and `pcb_world/agent/runner.py`. The
+integration page's 170-row manifest is now labelled as the historical snapshot
+of the commit it was generated for, and it is deliberately not regenerated
+against this tree, so its two rows for this file and for the ledger no longer
+describe the follow-up and are not claimed to.
+
+**Two things the follow-up stopped claiming.** The review page's remaining
+real-board net indices are replaced by the aggregate relation count and per-net
+split the same paragraph already carried, and the page no longer treats a
+non-forced push as established: the reading is bounded to local objects, because
+server-side history is not readable from here. Its check 4 is recorded as not
+provable from this host, with what is established stated narrowly - the branch
+tip is a direct descendant of the published `main` tip, and no local evidence of
+a rewrite exists. Every test conclusion, the O4 limitation, the patch
+cross-registration and the record that four of five patch digests are first
+registered on the review page are all preserved.
+
+**What did not change, and the proof.** No executable source, no test, no engine
+patch, no pinned binary, no board, rule, project or accepted pointer was touched,
+and the private board workspace was not read. Every source, test and patch path
+still carries the SHA-256 the accepted strict run measured, so that run still
+covers the code and no native run was repeated for a documentation-only change.
+The ledger validates with zero errors and zero warnings, and its 21-entry review
+snapshot binds the corrected integration and review pages by content hash. The
+follow-up's own commit and tree are recorded in the handoff packet returned to
+Astra, because a file cannot carry the hash of the commit that contains it.
