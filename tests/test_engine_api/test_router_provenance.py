@@ -376,7 +376,12 @@ def test_both_load_sites_refuse_a_router_from_other_cpp(tmp_path, ipc, via):
     proc = _construct_engine(bad, ipc, via)
     assert proc.returncode != 0
     assert "RouterProvenanceError" in proc.stderr and "deadbeef" in proc.stderr, proc.stderr[-800:]
-    assert "does-not-exist" not in proc.stderr          # refused BEFORE any board/server work
+    # Refused BEFORE any board/server work: the guard is the only failure, and no
+    # board open is attempted. (Do not assert on the bare filename: from Python
+    # 3.13 a `-c` snippet's traceback echoes its own source line, which contains
+    # the path passed to KiCadEngine.)
+    assert "failed to load board" not in proc.stderr
+    assert "IO_ERROR" not in proc.stderr
 
 
 def test_a_refused_ipc_spawn_leaves_no_tempdir_behind(tmp_path):

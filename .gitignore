@@ -41,6 +41,7 @@ __pycache__/
 
 # Virtual environments at the repo root (engine/.gitignore covers its own)
 /.venv
+/.local-bin/
 /venv
 /ENV
 /env

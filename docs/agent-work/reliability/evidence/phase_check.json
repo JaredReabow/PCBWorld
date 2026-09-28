@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-09-29T03:06:57+1000",
+  "python": "/Users/leo/Documents/PCBWorld-reliability/.venv/bin/python",
+  "repo_root": "/Users/leo/Documents/PCBWorld-reliability",
+  "build_dir": "/Users/leo/Documents/PCBWorld-reliability/build_rl",
+  "native_engine_available": true,
+  "strict": true,
+  "expected_native_tests": 146,
+  "groups": [
+    {
+      "group": "unit",
+      "command": "/Users/leo/Documents/PCBWorld-reliability/.venv/bin/python -m pytest tests/agent/test_artifact_store.py tests/agent/test_owned_engine_deadline.py tests/agent/test_modes_and_validation.py tests/agent/test_state_and_rules.py tests/agent/test_transaction_unit.py tests/agent/test_fault_injection.py tests/agent/test_drc_classification.py tests/agent/test_drc_inventory_identity.py tests/agent/test_evidence_validation.py tests/agent/test_kicad_metadata.py tests/agent/test_serialized_metadata.py tests/agent/test_reference_baseline.py tests/agent/test_scheduler_unit.py tests/agent/test_runner_scripted.py tests/agent/test_failure_taxonomy.py tests/agent/test_coverage_and_clearance.py tests/agent/test_free_via_search.py tests/agent/test_planner_client.py tests/agent/test_integration_gaps.py tests/agent/test_phase3_integrity.py tests/agent/test_cli_gate.py tests/agent/test_terminals.py tests/agent/test_final_gates.py tests/agent/test_tool_api.py tests/agent/test_gate_integrity.py tests/agent/test_zone_prefilter_unit.py tests/engine/test_phase_gate_groups.py -q -o addopts= -p no:cacheprovider",
+      "exit_status": 0,
+      "summary": "640 passed in 12.87s",
+      "counts": {
+        "passed": 640
+      },
+      "load_failure": false,
+      "load_failure_marker": "",
+      "duration_s": 13.1,
+      "tail": [
+        "........................................................................ [ 11%]",
+        "........................................................................ [ 22%]",
+        "........................................................................ [ 33%]",
+        "........................................................................ [ 45%]",
+        "........................................................................ [ 56%]",
+        "........................................................................ [ 67%]",
+        "........................................................................ [ 78%]",
+        "........................................................................ [ 90%]",
+        "................................................................         [100%]",
+        "640 passed in 12.87s"
+      ]
+    },
+    {
+      "group": "native",
+      "command": "/Users/leo/Documents/PCBWorld-reliability/.venv/bin/python -m pytest tests/agent/test_native_contract.py tests/agent/test_native_rules.py tests/agent/test_native_drc_enum.py tests/agent/test_native_runner.py tests/agent/test_native_layers.py tests/agent/test_native_fill.py tests/agent/test_native_terminals.py tests/agent/test_native_item_inventory.py tests/agent/test_native_pour_endpoints.py tests/agent/test_native_component_graph.py tests/agent/test_native_via_sizes.py tests/agent/test_native_drc_incremental.py tests/agent/test_native_final_gates.py tests/agent/test_zone_point_query.py tests/engine/test_reporter_cache_canonical_order.py -q -o addopts= -p no:cacheprovider",
+      "exit_status": 0,
+      "summary": "146 passed in 88.30s (0:01:28)",
+      "counts": {
+        "passed": 146
+      },
+      "load_failure": false,
+      "load_failure_marker": "",
+      "duration_s": 88.5,
+      "tail": [
+        "........................................................................ [ 49%]",
+        "........................................................................ [ 98%]",
+        "..                                                                       [100%]",
+        "146 passed in 88.30s (0:01:28)"
+      ]
+    },
+    {
+      "group": "patches",
+      "command": "/Users/leo/Documents/PCBWorld-reliability/.venv/bin/python /Users/leo/Documents/PCBWorld-reliability/tools/reliability/check_engine_patches.py",
+      "exit_status": 0,
+      "summary": "OK: the engine patches apply cleanly to the pin and reproduce this tree",
+      "counts": {},
+      "load_failure": false,
+      "load_failure_marker": "",
+      "duration_s": 0.3,
+      "tail": [
+        "engine HEAD  : 7a31e0c982a84fcda75be3ce69966027135bd7c1",
+        "patch order  : 0001-routing-rule-context.patch, 0002-phase5-integrity-and-copper-fill.patch, 0003-zone-point-query.patch, 0004-reporter-cache-canonical-order.patch, 0005-netless-first-pair-release.patch",
+        "files        : 9 read from 7a31e0c",
+        "added by patch: kicad-patches/kicad/pcbnew/drc/drc_test_provider_copper_clearance.cpp",
+        "applied      : 0001-routing-rule-context.patch",
+        "applied      : 0002-phase5-integrity-and-copper-fill.patch",
+        "applied      : 0003-zone-point-query.patch",
+        "applied      : 0004-reporter-cache-canonical-order.patch",
+        "applied      : 0005-netless-first-pair-release.patch",
+        "byte-equal   : 9 file(s) match /Users/leo/Documents/PCBWorld-reliability/engine",
+        "wire copies  : identical (f787f5be4e1f7ff7f1280466bcec4e4db7a69aac796c70521c6ac4a1c50907f6)",
+        "OK: the engine patches apply cleanly to the pin and reproduce this tree"
+      ]
+    }
+  ],
+  "problems": [],
+  "exit_status": 0,
+  "native_executed": 146
+}

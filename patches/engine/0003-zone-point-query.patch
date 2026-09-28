@@ -1,0 +1,535 @@
+diff --git a/engine_server/wire.py b/engine_server/wire.py
+index 83d7d10..922aa89 100644
+--- a/engine_server/wire.py
++++ b/engine_server/wire.py
+@@ -90,6 +90,66 @@ class BoardItemInfo(NamedTuple):
+     physical_id: str
+ 
+ 
++class ZonePointHit(NamedTuple):
++    """One zone covering a queried point on a queried copper layer.
++
++    A point/layer can be covered by several zones at once, so
++    ``get_zone_point_hits()`` returns every covering zone - all nets - rather
++    than a single one that would hide the others.
++
++    ``distance_mm`` is the distance from the query point to this zone's *filled
++    copper* on this layer: 0.0 on copper, the distance to the nearest fill edge
++    or void wall otherwise, and -1.0 when the zone carries no fill polygons for
++    the layer. It is the geometry a caller needs to test a copper object of
++    radius R that needs clearance C (``distance_mm < R + C``).
++
++    ``fill_provenance`` is not a currency claim: KiCad clears ``NeedRefill()``
++    when a board is parsed, so the engine cannot prove the loaded fill matches
++    the loaded rules. Values: ``loaded_unverified`` (fill came from the loaded
++    board), ``no_fill`` (this zone has no fill polygons for this layer) or
++    ``unknown`` (the zone could not be evaluated).
++    """
++
++    zone_uuid: str
++    name: str
++    source: str
++    layer: int
++    net_code: int
++    is_rule_area: bool
++    keepout_flags: int
++    in_outline: bool
++    in_fill: bool
++    fill_is_island: bool
++    distance_mm: float
++    fill_provenance: str
++
++
++class ZonePointResult(NamedTuple):
++    """One ``get_zone_point_hits()`` answer, with every covering zone in ``hits``.
++
++    ``status`` is ``resolved`` only when every zone on that layer was evaluated;
++    otherwise it is ``unknown`` and ``reason`` says why - and a consumer must
++    treat unknown as unknown, never as safe.
++
++    ``classification`` resolves the copper question only: ``no_zone``,
++    ``outline_only``, ``fill_single_net`` (``fill_net_code`` names the one net),
++    ``fill_multi_net`` (several nets of pour copper cover the point - a conflict,
++    so no single net is named) or ``unknown``.
++    """
++
++    query_index: int
++    layer: int
++    status: str
++    reason: str
++    classification: str
++    fill_net_code: int
++    in_keepout: bool
++    keepout_flags: int
++    fill_provenance: str
++    zones_tested: int
++    hits: list
++
++
+ class RatsnestEdge(NamedTuple):
+     x1_mm: float
+     y1_mm: float
+@@ -256,6 +316,8 @@ _WIRE_TYPES = {
+     "ViaInfo": ViaInfo,
+     "PadInfo": PadInfo,
+     "BoardItemInfo": BoardItemInfo,
++    "ZonePointHit": ZonePointHit,
++    "ZonePointResult": ZonePointResult,
+     "RatsnestEdge": RatsnestEdge,
+     "ClusterPoint": ClusterPoint,
+     "ZoneInfo": ZoneInfo,
+diff --git a/kicad-patches/rl/pns_rl_bindings.cpp b/kicad-patches/rl/pns_rl_bindings.cpp
+index c7c7a1c..9d6cb86 100644
+--- a/kicad-patches/rl/pns_rl_bindings.cpp
++++ b/kicad-patches/rl/pns_rl_bindings.cpp
+@@ -185,6 +185,53 @@ PYBIND11_MODULE( kicad_rl_router, m )
+                 + " from=" + i.source + ">";
+         } );
+ 
++    // ------------------------------------------------------------------
++    // RLZonePointHit / RLZonePointResult — read-only point-in-zone query
++    // ------------------------------------------------------------------
++    py::class_<RLZonePointHit>( m, "ZonePointHit" )
++        .def_readonly( "zone_uuid",       &RLZonePointHit::zone_uuid )
++        .def_readonly( "name",            &RLZonePointHit::name )
++        .def_readonly( "source",          &RLZonePointHit::source )
++        .def_readonly( "layer",           &RLZonePointHit::layer )
++        .def_readonly( "net_code",        &RLZonePointHit::net_code )
++        .def_readonly( "is_rule_area",    &RLZonePointHit::is_rule_area )
++        .def_readonly( "keepout_flags",   &RLZonePointHit::keepout_flags )
++        .def_readonly( "in_outline",      &RLZonePointHit::in_outline )
++        .def_readonly( "in_fill",         &RLZonePointHit::in_fill )
++        .def_readonly( "fill_is_island",  &RLZonePointHit::fill_is_island )
++        .def_readonly( "distance_mm",     &RLZonePointHit::distance_mm )
++        .def_readonly( "fill_provenance", &RLZonePointHit::fill_provenance )
++        .def( "__repr__", []( const RLZonePointHit& h )
++        {
++            return "<ZonePointHit zone=" + h.zone_uuid.substr( 0, 8 ) + " net="
++                + std::to_string( h.net_code ) + " layer=" + std::to_string( h.layer )
++                + ( h.in_fill ? " in_fill" : "" )
++                + ( h.in_outline ? " in_outline" : "" )
++                + ( h.is_rule_area ? " rule_area" : "" )
++                + " distance_mm=" + std::to_string( h.distance_mm )
++                + " fill=" + h.fill_provenance + ">";
++        } );
++
++    py::class_<RLZonePointResult>( m, "ZonePointResult" )
++        .def_readonly( "query_index",     &RLZonePointResult::query_index )
++        .def_readonly( "layer",           &RLZonePointResult::layer )
++        .def_readonly( "status",          &RLZonePointResult::status )
++        .def_readonly( "reason",          &RLZonePointResult::reason )
++        .def_readonly( "classification",  &RLZonePointResult::classification )
++        .def_readonly( "fill_net_code",   &RLZonePointResult::fill_net_code )
++        .def_readonly( "in_keepout",      &RLZonePointResult::in_keepout )
++        .def_readonly( "keepout_flags",   &RLZonePointResult::keepout_flags )
++        .def_readonly( "fill_provenance", &RLZonePointResult::fill_provenance )
++        .def_readonly( "zones_tested",    &RLZonePointResult::zones_tested )
++        .def_readonly( "hits",            &RLZonePointResult::hits )
++        .def( "__repr__", []( const RLZonePointResult& r )
++        {
++            return "<ZonePointResult #" + std::to_string( r.query_index )
++                + " layer=" + std::to_string( r.layer ) + " " + r.status
++                + " " + r.classification + " hits=" + std::to_string( r.hits.size() )
++                + " fill=" + r.fill_provenance + ">";
++        } );
++
+     // ------------------------------------------------------------------
+     // RLFootprintInfo
+     // ------------------------------------------------------------------
+@@ -743,6 +790,26 @@ PYBIND11_MODULE( kicad_rl_router, m )
+         .def( "get_keepouts", &PNS_RL_ROUTER::getKeepouts,
+               "Return a list of ZoneInfo objects for rule-area keepout zones "
+               "(one entry per zone per copper layer)." )
++        .def( "get_zone_point_hits", &PNS_RL_ROUTER::getZonePointHits,
++              py::arg( "queries" ),
++              "Read-only point-in-zone query. ``queries`` is a list of "
++              "(x_mm, y_mm, layer, window_mm) rows; a zone is reported when the "
++              "point is inside its outline, inside its fill, or within "
++              "``window_mm`` of that fill - so a caller testing "
++              "``distance_mm < margin`` must pass window_mm >= margin to be shown "
++              "every zone that test could match. Returns one ZonePointResult per query, in "
++              "query order, each carrying every zone covering that point on that "
++              "copper layer - all nets, so an overlap between zones is reported "
++              "rather than hidden behind one net. Per hit, ``distance_mm`` is the "
++              "distance to that zone's filled copper on the layer (0.0 on copper, "
++              "-1.0 when the zone has no fill for the layer), which is the geometry "
++              "a caller needs to test a copper object of radius R against its own "
++              "clearance C as ``distance_mm < R + C``. "
++              "``fill_provenance`` is not a currency claim: KiCad clears "
++              "NeedRefill() when a board is parsed and only holds a fill hash this "
++              "process computed, so the honest values are 'loaded_unverified', "
++              "'no_fill' and 'unknown'. Advisory only - the native DRC remains the "
++              "authority on whether a plan may be kept." )
+         .def( "get_footprints", &PNS_RL_ROUTER::getFootprints,
+               "Return a list of FootprintInfo objects for every component, each "
+               "carrying its courtyard outline in board coordinates (empty when "
+diff --git a/kicad-patches/rl/pns_rl_router.cpp b/kicad-patches/rl/pns_rl_router.cpp
+index 079dba7..d1f775e 100644
+--- a/kicad-patches/rl/pns_rl_router.cpp
++++ b/kicad-patches/rl/pns_rl_router.cpp
+@@ -2328,6 +2328,242 @@ std::vector<RLZoneInfo> PNS_RL_ROUTER::getKeepouts() const
+ }
+ 
+ 
++std::vector<RLZonePointResult> PNS_RL_ROUTER::getZonePointHits(
++        const std::vector<std::tuple<double, double, int, double>>& queries ) const
++{
++    std::vector<RLZonePointResult> results;
++    results.reserve( queries.size() );
++
++    // Same containers SyncWorld reads: board zones plus footprint-scoped ones.
++    // Collected once per call — the zone list cannot change under a read-only
++    // accessor, and rebuilding it per query would be pure overhead.
++    std::vector<std::pair<ZONE*, std::string>> zones;
++
++    if( m_board )
++    {
++        for( ZONE* zone : m_board->Zones() )
++            zones.emplace_back( zone, "board.zones" );
++
++        for( FOOTPRINT* fp : m_board->Footprints() )
++            for( ZONE* zone : fp->Zones() )
++                zones.emplace_back( zone, "footprint.zones" );
++    }
++
++    for( size_t index = 0; index < queries.size(); ++index )
++    {
++        const double xMm     = std::get<0>( queries[index] );
++        const double yMm     = std::get<1>( queries[index] );
++        const int    layerId = std::get<2>( queries[index] );
++        const double windowMm = std::max( 0.0, std::get<3>( queries[index] ) );
++
++        RLZonePointResult result;
++        result.query_index   = static_cast<int>( index );
++        result.layer         = layerId;
++        result.status        = "unknown";
++        result.classification = "unknown";
++        result.fill_net_code = -1;
++        result.in_keepout    = false;
++        result.keepout_flags = 0;
++        result.fill_provenance = "no_fill";
++        result.zones_tested  = 0;
++
++        if( !m_board )
++        {
++            result.reason = "no board is loaded";
++            results.push_back( std::move( result ) );
++            continue;
++        }
++
++        // IsCopperLayer alone, not a range: this enum orders the stack as
++        // F_Cu=0, B_Cu=2, In1_Cu=4 (+2 per inner layer), so an inner layer is
++        // numerically *above* B_Cu and a F_Cu..B_Cu range check would silently
++        // refuse every inner layer.
++        if( layerId < F_Cu || !IsCopperLayer( static_cast<PCB_LAYER_ID>( layerId ) ) )
++        {
++            result.reason = "layer is not a copper layer";
++            results.push_back( std::move( result ) );
++            continue;
++        }
++
++        const PCB_LAYER_ID layer = static_cast<PCB_LAYER_ID>( layerId );
++        const VECTOR2I     point( nmFromMm( xMm ), nmFromMm( yMm ) );
++        const int          windowNm = nmFromMm( windowMm );
++
++        // Nets among the fill copper this point touches. -2 means "none yet";
++        // net -1 (netless fill) is a value like any other, because a point on
++        // netless copper is not on the candidate's net either. Tracking a
++        // first-value plus a conflict flag keeps the answer independent of zone
++        // iteration order without a container.
++        int  fillNet       = -2;
++        bool fillNetMulti  = false;
++        int  loadedHits    = 0;
++        int  unknownHits   = 0;
++
++        for( const std::pair<ZONE*, std::string>& entry : zones )
++        {
++            ZONE* zone = entry.first;
++
++            if( !zone )
++                continue;
++
++            const LSET layers = zone->GetLayerSet();
++
++            if( !layers.Contains( layer ) )
++                continue;                 // layer span: tested on every layer it is on
++
++            ++result.zones_tested;
++
++            RLZonePointHit hit;
++            hit.zone_uuid    = zone->m_Uuid.AsString().ToStdString();
++            hit.name         = zone->GetZoneName().ToStdString();
++            hit.source       = entry.second;
++            hit.layer        = layerId;
++            hit.net_code     = zone->GetNetCode();
++            hit.is_rule_area = zone->GetIsRuleArea();
++            hit.keepout_flags = 0;
++            hit.in_outline   = false;
++            hit.in_fill      = false;
++            hit.fill_is_island = false;
++            hit.distance_mm  = -1.0;
++            hit.fill_provenance = "no_fill";
++
++            if( hit.is_rule_area && zone->HasKeepoutParametersSet() )
++            {
++                // The same gate SyncWorld uses before adding PNS obstacles, so
++                // this agrees with the region the router itself treats as a
++                // keepout instead of with every rule area on the board.
++                if( zone->GetDoNotAllowTracks() )
++                    hit.keepout_flags |= 1;
++                if( zone->GetDoNotAllowVias() )
++                    hit.keepout_flags |= 2;
++                if( zone->GetDoNotAllowPads() )
++                    hit.keepout_flags |= 4;
++            }
++            else if( !hit.is_rule_area && zone->HasFilledPolysForLayer( layer ) )
++            {
++                const std::shared_ptr<SHAPE_POLY_SET>& fill =
++                        zone->GetFilledPolysList( layer );
++
++                // HasFilledPolysForLayer() is true for a zone whose layer entry
++                // exists but holds no polygons (a pour declared on the layer
++                // with no stored fill). Distance/containment on an empty set
++                // returns KiCad's "no segments" sentinel rather than 0, so an
++                // empty set has to be reported as "no fill to measure" instead
++                // of as a very large distance.
++                if( fill && !fill->IsEmpty() && fill->OutlineCount() > 0 )
++                {
++                    const SEG::ecoord squared = fill->SquaredDistance( point, false );
++
++                    // SquaredDistance returns 0 exactly when the point is
++                    // contained in the fill (holes excluded); otherwise it is
++                    // the squared distance to the nearest fill edge or void
++                    // wall. sqrt() is paid once per zone per query, not per
++                    // edge, because the accumulator is already squared.
++                    hit.distance_mm = mmFromNm(
++                            static_cast<int>( std::sqrt( static_cast<double>( squared ) ) ) );
++                    hit.in_fill = ( squared == 0 );
++                    hit.fill_provenance = "loaded_unverified";
++                    ++loadedHits;
++
++                    if( hit.in_fill )
++                    {
++                        if( fillNet == -2 )
++                            fillNet = hit.net_code;
++                        else if( fillNet != hit.net_code )
++                            fillNetMulti = true;
++
++                        for( int polygonIndex = 0;
++                             polygonIndex < fill->OutlineCount(); ++polygonIndex )
++                        {
++                            if( fill->Contains( point, polygonIndex, 1 )
++                                    && zone->IsIsland( layer, polygonIndex ) )
++                            {
++                                hit.fill_is_island = true;
++                                break;
++                            }
++                        }
++                    }
++                }
++                else if( fill )
++                {
++                    // Nothing to measure on this layer: reported as "no_fill",
++                    // never as a distance, and never as proof that the current
++                    // rules would put no copper here.
++                    hit.fill_provenance = "no_fill";
++                }
++                else
++                {
++                    hit.fill_provenance = "unknown";
++                    ++unknownHits;
++                }
++            }
++
++            const SHAPE_POLY_SET* outline = zone->Outline();
++            hit.in_outline = outline && outline->OutlineCount() > 0
++                             && outline->Contains( point, -1, 1 );
++
++            // A zone is a hit when the point is in it, on its copper, or within
++            // the query's own window of that copper. The window is what lets a
++            // caller test `distance_mm < margin` exactly: any zone close enough
++            // to satisfy that test is reported, and nothing else is.
++            const bool withinWindow = hit.distance_mm >= 0.0
++                                      && hit.distance_mm <= windowMm;
++
++            if( !hit.in_outline && !hit.in_fill && !withinWindow )
++                continue;                // the point is not near this zone at all
++
++            if( hit.is_rule_area && hit.keepout_flags != 0 )
++            {
++                result.in_keepout = true;
++                result.keepout_flags |= hit.keepout_flags;
++            }
++
++            result.hits.push_back( std::move( hit ) );
++        }
++
++        result.status = "resolved";
++
++        if( unknownHits > 0 )
++        {
++            result.fill_provenance = "unknown";
++        }
++        else if( loadedHits > 0 )
++        {
++            result.fill_provenance = "loaded_unverified";
++        }
++        else
++        {
++            result.fill_provenance = "no_fill";
++        }
++
++        if( fillNetMulti )
++        {
++            // A conflict is reported as one: several nets of pour copper cover
++            // this point, so naming any single one of them would hide the rest.
++            result.classification = "fill_multi_net";
++            result.fill_net_code  = -1;
++        }
++        else if( fillNet != -2 )
++        {
++            result.classification = "fill_single_net";
++            result.fill_net_code  = fillNet;
++        }
++        else if( result.hits.empty() )
++        {
++            result.classification = "no_zone";
++        }
++        else
++        {
++            result.classification = "outline_only";
++        }
++
++        results.push_back( std::move( result ) );
++    }
++
++    return results;
++}
++
++
+ std::vector<RLFootprintInfo> PNS_RL_ROUTER::getFootprints() const
+ {
+     std::vector<RLFootprintInfo> result;
+diff --git a/kicad-patches/rl/pns_rl_router.h b/kicad-patches/rl/pns_rl_router.h
+index 3321d92..a9bb7e5 100644
+--- a/kicad-patches/rl/pns_rl_router.h
++++ b/kicad-patches/rl/pns_rl_router.h
+@@ -18,6 +18,7 @@
+ #include <map>
+ #include <unordered_map>
+ #include <string>
++#include <tuple>
+ #include <utility>
+ #include <vector>
+ #include <array>
+@@ -106,6 +107,83 @@ struct RLZoneInfo
+     std::string name;                ///< zone name (may be empty)
+ };
+ 
++/**
++ * Info struct returned by getZonePointHits() — one entry per zone that covers a
++ * queried point on the queried copper layer.
++ *
++ * A point/layer can be covered by several zones at once (overlapping pours, a
++ * pour under a rule area, an own-net island inside a foreign pour), so the
++ * accessor returns *every* covering zone rather than a single net; a caller that
++ * needs one answer must resolve the conflict itself or treat it as unknown.
++ *
++ * ``distance_mm`` is the geometric answer the point itself cannot give: the
++ * distance from the query point to this zone's *filled copper* on this layer —
++ * 0.0 when the point is on the copper, otherwise the distance to the nearest
++ * fill boundary or void wall, and -1.0 when the zone has no fill polygons for
++ * this layer to measure against. A caller turning a copper object of radius R
++ * that needs clearance C tests ``distance_mm < R + C``; that is a collision test
++ * on the *zone's* copper, not a promise about the rest of the board, and it
++ * never replaces the native DRC.
++ *
++ * ``fill_provenance`` is deliberately not a currency claim. KiCad clears
++ * ``NeedRefill()`` unconditionally when a board is parsed and only ever holds a
++ * fill hash the current process computed, so the engine cannot prove the loaded
++ * fill matches the loaded design rules. The honest values are:
++ *   "loaded_unverified" — the fill polygons came from the loaded board; whether
++ *                         the current rules would produce them is NOT verified.
++ *   "no_fill"           — this zone carries no fill polygons for this layer
++ *                         (nothing to measure; not a claim that copper is absent
++ *                         under the current rules).
++ *   "unknown"           — the zone could not be evaluated on this layer.
++ */
++struct RLZonePointHit
++{
++    std::string zone_uuid;          ///< the zone's KIID as a string
++    std::string name;               ///< zone name (may be empty)
++    std::string source;             ///< "board.zones" | "footprint.zones"
++    int         layer;              ///< PCB_LAYER_ID this hit was evaluated on
++    int         net_code;           ///< the zone's own net (-1 = netless)
++    bool        is_rule_area;       ///< GetIsRuleArea()
++    int         keepout_flags;      ///< bit0 tracks, bit1 vias, bit2 pads (rule areas)
++    bool        in_outline;         ///< point inside this zone's outline on this layer
++    bool        in_fill;            ///< point on this zone's filled copper (distance == 0)
++    bool        fill_is_island;     ///< the covering fill polygon is an insulated island
++    double      distance_mm;        ///< distance to this layer's filled copper (-1 = no fill)
++    std::string fill_provenance;    ///< "loaded_unverified" | "no_fill" | "unknown"
++};
++
++/**
++ * Result struct returned by getZonePointHits() — one entry per query, in query
++ * order, carrying *all* covering zones.
++ *
++ * ``classification`` resolves the copper question only, over the hits that
++ * report fill copper within the caller's own geometry (``in_fill``, or
++ * ``distance_mm`` compared by the caller):
++ *   "no_zone"        — no zone covers the point on this layer
++ *   "outline_only"   — covered by zone outline(s), no fill copper under the point
++ *   "fill_single_net"— fill copper of exactly one net; ``fill_net_code`` names it
++ *   "fill_multi_net" — fill copper of more than one net (a conflict: do not pick)
++ *   "unknown"        — the query could not be evaluated
++ *
++ * ``status`` is "resolved" only when every zone on this layer was evaluated;
++ * otherwise it is "unknown" and ``reason`` says why. Unknown is a first-class
++ * answer: callers must treat it as unknown, never as safe.
++ */
++struct RLZonePointResult
++{
++    int         query_index;        ///< index into the query list
++    int         layer;              ///< echo of the queried layer
++    std::string status;             ///< "resolved" | "unknown"
++    std::string reason;             ///< why the query is unknown ("" when resolved)
++    std::string classification;     ///< see above
++    int         fill_net_code;      ///< the single poured net, or -1
++    bool        in_keepout;         ///< a rule area with keepout params covers the point
++    int         keepout_flags;      ///< OR of the covering rule areas' flags
++    std::string fill_provenance;    ///< worst case over hits: unknown > loaded_unverified > no_fill
++    int         zones_tested;       ///< zones whose layer set covers this layer
++    std::vector<RLZonePointHit> hits;   ///< every covering zone, unordered by net
++};
++
+ /**
+  * Info struct returned by getFootprints() — one entry per board component.
+  *
+@@ -844,6 +922,26 @@ public:
+     /** Rule-area keepout zones (one entry per zone per copper layer). */
+     std::vector<RLZoneInfo> getKeepouts() const;
+ 
++    /**
++     * Read-only point-in-filled-zone query, one result per (x_mm, y_mm, layer)
++     * query and every covering zone in it.
++     *
++     * Advisory only: it reports what the *loaded* zone geometry holds at a
++     * point. It does not run DRC, does not mutate anything, does not resync the
++     * world, and does not replace the native DRC as the authority on whether a
++     * plan may be kept. Rule-area coverage and keepout flags are reported
++     * alongside pour coverage so a caller can see both without a second call.
++     *
++     * `queries` is a list of (x_mm, y_mm, layer) tuples; the shape is primitives
++     * only so the engine server needs no conversion for it. Each query also
++     * carries a ``window_mm``: a zone is reported when the point is inside its
++     * outline, inside its fill, or within that distance of its fill copper. A
++     * caller testing ``distance_mm < margin_mm`` must pass ``window_mm >=
++     * margin_mm`` or it will not be shown the zones it is testing for.
++     */
++    std::vector<RLZonePointResult> getZonePointHits(
++            const std::vector<std::tuple<double, double, int, double>>& queries ) const;
++
+     /** All footprints (components) with their courtyard outlines. */
+     std::vector<RLFootprintInfo> getFootprints() const;
+ 

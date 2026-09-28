@@ -1,0 +1,94 @@
+diff --git a/kicad-patches/kicad/pcbnew/drc/drc_test_provider_copper_clearance.cpp b/kicad-patches/kicad/pcbnew/drc/drc_test_provider_copper_clearance.cpp
+index 18debfb..af430b6 100644
+--- a/kicad-patches/kicad/pcbnew/drc/drc_test_provider_copper_clearance.cpp
++++ b/kicad-patches/kicad/pcbnew/drc/drc_test_provider_copper_clearance.cpp
+@@ -1078,6 +1078,42 @@ void DRC_TEST_PROVIDER_COPPER_CLEARANCE::testPadClearances( )
+                                             if( it != checkedPairs.end() )
+                                                 it->second.has_error = true;
+                                         }
++                                        else if( other->Type() == PCB_PAD_T )
++                                        {
++                                            PAD* otherPad = static_cast<PAD*>( other );
++
++                                            // The visited member is netless, its partner carries a
++                                            // net, and the two are the same logical pad, so the
++                                            // branch above returned without a finding purely because
++                                            // *this* member was reached first. The filter has
++                                            // already claimed this layer, and the netted member's
++                                            // later visit would now be filtered out, so the pair
++                                            // would be reported by neither member. Release the
++                                            // claim so the netted member decides the pair; it files
++                                            // the single row, and its has_error then suppresses the
++                                            // remaining layers exactly as before.
++                                            //
++                                            // Deliberately narrow: only the netless-first
++                                            // orientation of a mixed pair is released, so an exempt
++                                            // pair (equal nets, both netless, or both
++                                            // unconnected-(...)) keeps its single claim, and a filed
++                                            // pair keeps its de-duplication.
++                                            if( pad->GetNetCode() == 0 && otherPad->GetNetCode() != 0
++                                                    && pad->SameLogicalPadAs( otherPad ) )
++                                            {
++                                                BOARD_ITEM* a = pad;
++                                                BOARD_ITEM* b = other;
++
++                                                if( static_cast<void*>( a ) > static_cast<void*>( b ) )
++                                                    std::swap( a, b );
++
++                                                std::lock_guard<std::mutex> lock( checkedPairsMutex );
++                                                auto it = checkedPairs.find( { a, b } );
++
++                                                if( it != checkedPairs.end() && !it->second.has_error )
++                                                    it->second.layers.reset( layer );
++                                            }
++                                        }
+ 
+                                         return !m_drcEngine->IsCancelled();
+                                     },
+diff --git a/kicad-patches/rl/drc_test_provider_rl_copper_clearance.cpp b/kicad-patches/rl/drc_test_provider_rl_copper_clearance.cpp
+index 4375b88..1444494 100644
+--- a/kicad-patches/rl/drc_test_provider_rl_copper_clearance.cpp
++++ b/kicad-patches/rl/drc_test_provider_rl_copper_clearance.cpp
+@@ -1137,6 +1137,42 @@ void DRC_TEST_PROVIDER_COPPER_CLEARANCE::testPadClearances( )
+                                             if( it != checkedPairs.end() )
+                                                 it->second.has_error = true;
+                                         }
++                                        else if( other->Type() == PCB_PAD_T )
++                                        {
++                                            PAD* otherPad = static_cast<PAD*>( other );
++
++                                            // The visited member is netless, its partner carries a
++                                            // net, and the two are the same logical pad, so the
++                                            // branch above returned without a finding purely because
++                                            // *this* member was reached first. The filter has
++                                            // already claimed this layer, and the netted member's
++                                            // later visit would now be filtered out, so the pair
++                                            // would be reported by neither member. Release the
++                                            // claim so the netted member decides the pair; it files
++                                            // the single row, and its has_error then suppresses the
++                                            // remaining layers exactly as before.
++                                            //
++                                            // Deliberately narrow: only the netless-first
++                                            // orientation of a mixed pair is released, so an exempt
++                                            // pair (equal nets, both netless, or both
++                                            // unconnected-(...)) keeps its single claim, and a filed
++                                            // pair keeps its de-duplication.
++                                            if( pad->GetNetCode() == 0 && otherPad->GetNetCode() != 0
++                                                    && pad->SameLogicalPadAs( otherPad ) )
++                                            {
++                                                BOARD_ITEM* a = pad;
++                                                BOARD_ITEM* b = other;
++
++                                                if( static_cast<void*>( a ) > static_cast<void*>( b ) )
++                                                    std::swap( a, b );
++
++                                                std::lock_guard<std::mutex> lock( checkedPairsMutex );
++                                                auto it = checkedPairs.find( { a, b } );
++
++                                                if( it != checkedPairs.end() && !it->second.has_error )
++                                                    it->second.layers.reset( layer );
++                                            }
++                                        }
+ 
+                                         return !m_drcEngine->IsCancelled();
+                                     },

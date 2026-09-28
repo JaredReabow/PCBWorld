@@ -1,0 +1,2768 @@
+{
+  "schema_version": 1,
+  "objective": {
+    "id": "pcbworld-v3",
+    "text": "Improve the PCBWorld harness and run it against the Helix V3 PCB, with Astra planning and review and DeepSeek doing implementation and bulk work.",
+    "amendments": [
+      {
+        "id": "amd-parallelism",
+        "text": "Use the /parallelism skill for all work where it makes sense to do so as its intent is to speed up work completion without degrading quality",
+        "recorded_at": "2026-09-28T00:00:00Z"
+      },
+      {
+        "id": "amd-run-plan",
+        "text": "Run the plan; Astra reviews results and plans the next step; DeepSeek implements; Astra reviews again.",
+        "recorded_at": "2026-09-28T10:25:00Z"
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "Improve the harness and validate its behavior on the V3 board.",
+      "source": "objective"
+    },
+    {
+      "id": "R2",
+      "text": "Keep Astra responsible for planning and acceptance and DeepSeek responsible for bulk implementation.",
+      "source": "objective"
+    },
+    {
+      "id": "R3",
+      "text": "Use parallel independent work when it speeds completion without degrading quality.",
+      "source": "amd-parallelism"
+    },
+    {
+      "id": "R4",
+      "text": "Continue routing the Helix V3 board toward complete connectivity while preserving DRC and original-relative acceptance gates.",
+      "source": "amd-run-plan"
+    }
+  ],
+  "baseline": {
+    "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+    "revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3",
+    "dirty": true,
+    "notes": "Shared dirty tree with phases 1-23 uncommitted; preserve all unrelated edits. Phase 23 worker finished before this ledger was introduced."
+  },
+  "limits": {
+    "max_concurrent_workers": null,
+    "max_total_workers": null,
+    "review_backlog_limit": 1,
+    "budget_usd": null
+  },
+  "artifacts": [
+    {
+      "id": "art-phase23-result",
+      "task_id": "T23",
+      "path": "docs/agent-work/reliability/phase23/RESULT.md",
+      "sha256": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase23-gate",
+      "task_id": "T23",
+      "path": "pcb_world/agent/drc_gate.py",
+      "sha256": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+      "kind": "code"
+    },
+    {
+      "id": "art-phase23-runner",
+      "task_id": "T23",
+      "path": "pcb_world/agent/runner.py",
+      "sha256": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+      "kind": "code"
+    },
+    {
+      "id": "art-phase24-result",
+      "task_id": "T24",
+      "path": "docs/agent-work/reliability/phase24/RESULT.md",
+      "sha256": "a26c8da1e04dd39dfacf5b6ccd9f4912c9388087e6d51c815fd08f6ba46c1c22",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase25-plan",
+      "task_id": "T25",
+      "path": "docs/agent-work/reliability/phase25/PLAN.md",
+      "sha256": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase25-result",
+      "task_id": "T25",
+      "path": "docs/agent-work/reliability/phase25/RESULT.md",
+      "sha256": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase26b-report",
+      "task_id": "T26B",
+      "path": "docs/agent-work/reliability/phase26/CLI_ATTRIBUTION.md",
+      "sha256": "b9ff098830df43c2ab2aae8fb47d63fd478a9a8f9b75ce8f81159e9f7e0b2f7f",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase26a-plan",
+      "task_id": "T26A",
+      "path": "docs/agent-work/reliability/phase26/PLAN.md",
+      "sha256": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase26a-result",
+      "task_id": "T26A",
+      "path": "docs/agent-work/reliability/phase26/RESULT.md",
+      "sha256": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase27b-report",
+      "task_id": "T27B",
+      "path": "docs/agent-work/reliability/phase27/SHORTING.md",
+      "sha256": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase27a-verifier",
+      "task_id": "T27A",
+      "path": "docs/agent-work/reliability/phase27/VERIFIER.md",
+      "sha256": "9f5d7d6eeeff8d01be04f6a291ecae104c5d54369b3e6b5b17438f4e8b5b97c2",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase28a-result",
+      "task_id": "T28A",
+      "path": "docs/agent-work/reliability/phase28/RESULT.md",
+      "sha256": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase28a-patch",
+      "task_id": "T28A",
+      "path": "patches/engine/0004-reporter-cache-canonical-order.patch",
+      "sha256": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+      "kind": "patch"
+    },
+    {
+      "id": "art-phase28a-regression",
+      "task_id": "T28A",
+      "path": "tests/engine/test_reporter_cache_canonical_order.py",
+      "sha256": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+      "kind": "test"
+    },
+    {
+      "id": "art-phase28a-fixture",
+      "task_id": "T28A",
+      "path": "tests/engine/reporter_fixture.py",
+      "sha256": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+      "kind": "test"
+    },
+    {
+      "id": "art-phase28c-replay",
+      "task_id": "T28C",
+      "path": "docs/agent-work/reliability/phase28/REPLAY.md",
+      "sha256": "cce3372c1a8241cc72fada47a7359e42e2437b753ed44afa6d2daf403d6ca647",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29n-report",
+      "task_id": "T29N",
+      "path": "docs/agent-work/reliability/phase29/NETLESS_ORDER.md",
+      "sha256": "b8b38566f4d5b0ff6a730586013c18e520e341f8b845417e1be69167d353729f",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase28cv-review",
+      "task_id": "T28CV",
+      "path": "docs/agent-work/reliability/phase28/REPLAY_REVIEW.md",
+      "sha256": "74b2337415b133800bd00ebb0c236534cc4f8381d581c2dd1bde7a40ac4fa72a",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29a-repair",
+      "task_id": "T29A",
+      "path": "docs/agent-work/reliability/phase29/REPAIR.md",
+      "sha256": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29av-review",
+      "task_id": "T29AV",
+      "path": "docs/agent-work/reliability/phase29/REPAIR_REVIEW.md",
+      "sha256": "5e77445009894f3bd80aa0655a829eae1a5671d2ffec2ac1ce9efd09b653bcf8",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29c-replay",
+      "task_id": "T29C",
+      "path": "docs/agent-work/reliability/phase29/REBASELINE_REPLAY.md",
+      "sha256": "a4613dbd3155a94b940d44764cbdb4b148718c4286728ad219269ab2cf7ae08d",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29g-report",
+      "task_id": "T29G",
+      "path": "docs/agent-work/reliability/phase29/EVIDENCE_VALIDATION.md",
+      "sha256": "f9b570520bed3aad3ffd68099b342580fdcdfa8b0831f329494b0464eebe351b",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29p-report",
+      "task_id": "T29P",
+      "path": "docs/agent-work/reliability/phase29/PROJECT_POLICY.md",
+      "sha256": "be07aa3903143b721eb01a5d75cce6333fe2d5506ea33b289635c7e36095778a",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29gv-review",
+      "task_id": "T29GV",
+      "path": "docs/agent-work/reliability/phase29/EVIDENCE_VALIDATION_REVIEW.md",
+      "sha256": "f99ce9b9889e33b213cfcb9c72dd26b55336f49013f8ed8b6452cb8141958243",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29c-refresh",
+      "task_id": "T29C",
+      "path": "docs/agent-work/reliability/phase29/REBASELINE_REFRESH.md",
+      "sha256": "5435a97664338184f8f956957de66a53e5c27b167cc57b84423fa6470f9786a5",
+      "kind": "report"
+    },
+    {
+      "id": "art-phase29cv-refresh",
+      "task_id": "T29CV",
+      "path": "docs/agent-work/reliability/phase29/REBASELINE_REVIEW.md",
+      "sha256": "4ffee34bb1a2ab679755ebad2344c6c3287bcd9bb99b9632a78159dc0b88d693",
+      "kind": "report"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T23",
+      "type": "implementation",
+      "objective": "Classify all 24 phase-17 native DRC refusals, reproduce representative transactions and fix any proven shared harness defect.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [],
+      "owner": {
+        "actor": "phase23_drc_refusals",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phases1-22",
+      "write_paths": [
+        "pcb_world/agent/drc_gate.py",
+        "pcb_world/agent/runner.py",
+        "tests/agent/fake_engine.py",
+        "tests/agent/test_drc_classification.py",
+        "tests/agent/test_runner_scripted.py",
+        "docs/agent-work/reliability/phase23/RESULT.md",
+        "HISTORY.md",
+        "CHANGELOG.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase17/RESULT.md"
+      ],
+      "non_goals": [
+        "No engine/wire or rule changes",
+        "No board promotion without complete gates"
+      ],
+      "acceptance": [
+        {
+          "id": "A23-1",
+          "criterion": "All 24 closure-then-refusal records are reconciled by exact plan identity.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A23-2",
+          "criterion": "Representative native reproductions identify DRC deltas and restore copper.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A23-3",
+          "criterion": "The evidence histogram fix is tested without weakening DRC gates.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A23-4",
+          "criterion": "Independent verification and a separate Astra acceptance review are scheduled in parallel where read-only ownership permits.",
+          "requirement_ids": [
+            "R2",
+            "R3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E23-1",
+          "acceptance": [
+            "A23-1",
+            "A23-2"
+          ],
+          "command": "private phase23 reconciliation and reproduction scripts",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase23-result"
+        },
+        {
+          "id": "E23-2",
+          "acceptance": [
+            "A23-3"
+          ],
+          "command": "bash tools/reliability/check_phase.sh --strict",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase23-gate",
+          "notes": "Worker reported 496 unit and 138 native tests, no skips."
+        },
+        {
+          "id": "E23-3",
+          "acceptance": [
+            "A23-4"
+          ],
+          "command": "parallel independent verifier and separate Astra reviewer",
+          "exit_status": 0,
+          "status": "pass",
+          "notes": "Verifier 109 targeted tests; Astra accepted exact hashes."
+        }
+      ],
+      "review": {
+        "reviewer_actor": "phase23_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Accepted after two documentation corrections; code hashes unchanged. No board promotion. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1"
+        }
+      }
+    },
+    {
+      "id": "T23V",
+      "type": "verification",
+      "objective": "Independently verify the phase-23 evidence-histogram patch and its no-policy-change claim.",
+      "state": "accepted",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "owner": {
+        "actor": "phase23_independent_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phase23",
+      "write_paths": [],
+      "read_paths": [
+        "pcb_world/agent/drc_gate.py",
+        "pcb_world/agent/runner.py",
+        "tests/agent/test_drc_classification.py",
+        "tests/agent/test_runner_scripted.py",
+        "docs/agent-work/reliability/phase23/RESULT.md"
+      ],
+      "verifies": [
+        "T23"
+      ],
+      "acceptance": [
+        {
+          "id": "A23V-1",
+          "criterion": "Independent read-only inspection finds the histogram complete and no DRC acceptance-policy change.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A23V-2",
+          "criterion": "Verification runs independently alongside Astra's acceptance review without conflicting writes.",
+          "requirement_ids": [
+            "R3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E23V-1",
+          "acceptance": [
+            "A23V-1"
+          ],
+          "command": ".venv/bin/python -m pytest tests/agent/test_drc_classification.py tests/agent/test_runner_scripted.py tests/agent/test_failure_taxonomy.py tests/agent/test_coverage_and_clearance.py tests/agent/test_drc_inventory_identity.py",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase23-gate",
+          "notes": "Independent verifier reported 109 passed, patch policy inspection and mutation check."
+        },
+        {
+          "id": "E23V-2",
+          "acceptance": [
+            "A23V-2"
+          ],
+          "command": "parallel native child review and verification observed through collaboration.wait_agent",
+          "exit_status": 0,
+          "status": "pass",
+          "notes": "Read-only verifier and separate Astra reviewer ran concurrently without shared writes."
+        }
+      ],
+      "review": {
+        "reviewer_actor": "phase23_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Accepted independent 109-test and mutation evidence. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1"
+        }
+      }
+    },
+    {
+      "id": "T24",
+      "type": "research",
+      "objective": "Measure supported zone refill under pinned rules on a disposable accepted-board copy and compare full DRC/connectivity/CLI evidence.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T23"
+      ],
+      "owner": {
+        "actor": "phase24_zone_refill",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase23",
+      "write_paths": [
+        "docs/agent-work/reliability/phase24/RESULT.md",
+        "HISTORY.md",
+        "CHANGELOG.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase24/PLAN.md",
+        "docs/agent-work/reliability/phase23/RESULT.md"
+      ],
+      "non_goals": [
+        "No accepted pointer change",
+        "No routing campaign or rule relaxation",
+        "No engine/wire changes"
+      ],
+      "acceptance": [
+        {
+          "id": "A24-1",
+          "criterion": "Refill support and pinned rule context are proved or explicitly reported unsupported.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A24-2",
+          "criterion": "Saved/reopened zone geometry and unchanged non-zone geometry are verified.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A24-3",
+          "criterion": "Native DRC, terminal partitions and complete pinned CLI are compared without moving the accepted pointer.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E24-1",
+          "acceptance": [
+            "A24-1",
+            "A24-2"
+          ],
+          "command": "private phase24 refill session, saved/reopened measurement and inventory checks",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase24-result"
+        },
+        {
+          "id": "E24-2",
+          "acceptance": [
+            "A24-3"
+          ],
+          "command": "private phase24 native DRC, terminal partition and pinned KiCad CLI checks",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase24-result",
+          "notes": "CLI verdict unverified, not accepted; measurement command completed."
+        }
+      ],
+      "review": {
+        "reviewer_actor": "phase24_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "T24 disposable measurement and corrected report accepted; T24V independent evidence accepted. Refilled board fails terminal and CLI gates, no promotion. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase24-result": "a26c8da1e04dd39dfacf5b6ccd9f4912c9388087e6d51c815fd08f6ba46c1c22"
+        }
+      }
+    },
+    {
+      "id": "T24V",
+      "type": "verification",
+      "objective": "Independently verify disposable refill geometry preservation and terminal/DRC comparisons.",
+      "state": "accepted",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [
+        "T23"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "write_paths": [],
+      "read_paths": [
+        "docs/agent-work/reliability/phase24/RESULT.md"
+      ],
+      "verifies": [
+        "T24"
+      ],
+      "acceptance": [
+        {
+          "id": "A24V-1",
+          "criterion": "Independent read-only checks confirm non-zone geometry preservation and the 33 split terminal pairs.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A24V-2",
+          "criterion": "Verification runs separately from the author while Astra reviews.",
+          "requirement_ids": [
+            "R3"
+          ]
+        }
+      ],
+      "owner": {
+        "actor": "phase24_independent_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase23",
+      "evidence": [
+        {
+          "id": "E24V-1",
+          "acceptance": [
+            "A24V-1",
+            "A24V-2"
+          ],
+          "command": "independent tokenizer/tree comparison, fresh native terminal/DRC, raw CLI audit",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase24-result",
+          "notes": "Non-zone raw-token equality 7221 items; 33 split witnesses; report corrections identified."
+        }
+      ],
+      "review": {
+        "reviewer_actor": "phase24_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "T24 disposable measurement and corrected report accepted; T24V independent evidence accepted. Refilled board fails terminal and CLI gates, no promotion. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase24-result": "a26c8da1e04dd39dfacf5b6ccd9f4912c9388087e6d51c815fd08f6ba46c1c22"
+        }
+      }
+    },
+    {
+      "id": "T25",
+      "type": "implementation",
+      "objective": "Run one bounded native reconnection pilot on a disposable refilled V3 board and measure post-refill DRC, terminal and CLI gates.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T23"
+      ],
+      "owner": {
+        "actor": "phase25_reconnect_pilot",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase23",
+      "write_paths": [
+        "docs/agent-work/reliability/phase25/PLAN.md",
+        "docs/agent-work/reliability/phase25/RESULT.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase24/PLAN.md"
+      ],
+      "non_goals": [
+        "No accepted pointer change",
+        "No gate or rule relaxation",
+        "No original EasyEDA project change",
+        "No staging, commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A25-1",
+          "criterion": "Seven fragmented clusters and minimum component joins are privately enumerated without exposing geometry publicly.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A25-2",
+          "criterion": "One two-component cluster receives bounded native route attempts and a post-route refill/save/reopen check.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A25-3",
+          "criterion": "Native DRC, original terminal restoration and complete CLI against canonical original are measured with accepted artifact unchanged.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E25-1",
+          "acceptance": [
+            "A25-1",
+            "A25-2"
+          ],
+          "command": "private phase25 fragments, selection, route and post-refill measurements",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase25-result"
+        },
+        {
+          "id": "E25-2",
+          "acceptance": [
+            "A25-3"
+          ],
+          "command": "private phase25 native/terminal checks and complete pinned CLI",
+          "exit_status": 4,
+          "status": "pass",
+          "artifact": "art-phase25-result",
+          "notes": "CLI command exit 4 is the expected unverified refusal; candidate not accepted."
+        },
+        {
+          "id": "E25-3",
+          "acceptance": [
+            "A25-1",
+            "A25-2",
+            "A25-3"
+          ],
+          "command": "bash tools/reliability/check_phase.sh --strict",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase25-result",
+          "notes": "496 unit + 138 native, no skips."
+        }
+      ],
+      "deferred_checks": [
+        "HISTORY and CHANGELOG updates deferred until T24 documentation owner finishes."
+      ],
+      "review": {
+        "reviewer_actor": "phase25_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Bounded pilot and independent verification accepted. Experimental candidate fails original-relative terminal and CLI gates; no promotion. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e"
+        }
+      }
+    },
+    {
+      "id": "T25V",
+      "type": "verification",
+      "objective": "Independently verify T25 retained route, refill survival, terminal improvement and CLI refusal without changing board artifacts.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T24"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase24",
+      "write_paths": [],
+      "read_paths": [
+        "docs/agent-work/reliability/phase25/RESULT.md"
+      ],
+      "verifies": [
+        "T25"
+      ],
+      "acceptance": [
+        {
+          "id": "A25V-1",
+          "criterion": "Independent re-derivation confirms one join survives refill without added native relevant findings or reference artifact mutation.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A25V-2",
+          "criterion": "Complete CLI refusal and residual terminal debt are correctly interpreted; public report protects private board data.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E25V-1",
+          "acceptance": [
+            "A25V-1",
+            "A25V-2"
+          ],
+          "command": "independent frozen-artifact audit, 18 tests and fresh native DRC/terminal rerun on disposable copies",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase25-result",
+          "notes": "Found public report six-cluster correction and missing post-refill CLI run; author correction pending."
+        }
+      ],
+      "owner": {
+        "actor": "phase25_independent_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase25_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Bounded pilot and independent verification accepted. Experimental candidate fails original-relative terminal and CLI gates; no promotion. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase24-result": "a26c8da1e04dd39dfacf5b6ccd9f4912c9388087e6d51c815fd08f6ba46c1c22",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e"
+        }
+      }
+    },
+    {
+      "id": "T26A",
+      "type": "implementation",
+      "objective": "Attempt up to eighteen remaining refill-induced component joins on disposable post-refill experimental board with per-step native and CLI gates.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T25"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase25",
+      "write_paths": [
+        "docs/agent-work/reliability/phase26/PLAN.md",
+        "docs/agent-work/reliability/phase26/RESULT.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase25/RESULT.md"
+      ],
+      "non_goals": [
+        "No accepted pointer, rule, engine, gate or original EasyEDA changes",
+        "No staging, commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A26A-1",
+          "criterion": "Each retained component join has exact anchor/terminal proof, no new partition regression, and reduced restoration debt after refill/save/reopen.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A26A-2",
+          "criterion": "Each retained step adds zero relevant native and complete CLI identities relative to immediate parent; failures are refused and recorded.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A26A-3",
+          "criterion": "Final experimental candidate is compared to accepted generation and canonical original, with accepted pointer unchanged.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E26A-1",
+          "acceptance": [
+            "A26A-1",
+            "A26A-2"
+          ],
+          "command": "bounded 18-link native campaign with checkpoint, refill and immediate-parent complete CLI gates",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase26a-result",
+          "notes": "6 retained, 12 refused, each retained step gates pass."
+        },
+        {
+          "id": "E26A-2",
+          "acceptance": [
+            "A26A-3"
+          ],
+          "command": "final native/terminal/CLI comparisons and hash guards",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase26a-result",
+          "notes": "Experimental candidate unverified vs canonical; pointer unchanged."
+        }
+      ],
+      "deferred_checks": [
+        "HISTORY/CHANGELOG integration deferred to single owner after T26A and T26B freeze."
+      ],
+      "owner": {
+        "actor": "phase26_reconnect_campaign",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase26_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Bounded experimental campaign and independent verification accepted; no board promotion. Native shorting intermittency is a residual limitation. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc"
+        }
+      }
+    },
+    {
+      "id": "T26B",
+      "type": "research",
+      "objective": "Attribute CLI findings across accepted generation and refill lineage and identify rule-preserving remedies without changing geometry.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [
+        "T25"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase25",
+      "write_paths": [
+        "docs/agent-work/reliability/phase26/CLI_ATTRIBUTION.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase25/RESULT.md"
+      ],
+      "non_goals": [
+        "No board/rule/engine/gate changes",
+        "No duplicate phase25 baseline/pre/post analysis",
+        "No staging, commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A26B-1",
+          "criterion": "Repeated complete CLI identities distinguish findings predating refill from refill-induced and unstable findings.",
+          "requirement_ids": [
+            "R1",
+            "R3"
+          ]
+        },
+        {
+          "id": "A26B-2",
+          "criterion": "Specific rule-preserving remedy candidates for isolation, thermal and dangling findings are supported by private per-item evidence.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E26B-1",
+          "acceptance": [
+            "A26B-1",
+            "A26B-2"
+          ],
+          "command": "20 complete pinned CLI reports, identity attribution, crosscheck and guards",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase26b-report",
+          "notes": "Attribution research only; no board acceptance."
+        }
+      ],
+      "owner": {
+        "actor": "phase26_cli_attribution",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase26_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Identity-attribution research and independent verifier accepted; remedies are experimental, no board acceptance. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26b-report": "b9ff098830df43c2ab2aae8fb47d63fd478a9a8f9b75ce8f81159e9f7e0b2f7f"
+        }
+      }
+    },
+    {
+      "id": "T26BV",
+      "type": "verification",
+      "objective": "Independently verify accepted-vs-refill CLI identity attribution and rule-preserving remedy evidence.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [
+        "T25"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase25",
+      "write_paths": [],
+      "read_paths": [
+        "docs/agent-work/reliability/phase26/CLI_ATTRIBUTION.md"
+      ],
+      "verifies": [
+        "T26B"
+      ],
+      "acceptance": [
+        {
+          "id": "A26BV-1",
+          "criterion": "Identity attribution and unstable reporter classification reproduce independently from frozen raw CLI reports.",
+          "requirement_ids": [
+            "R1",
+            "R3"
+          ]
+        },
+        {
+          "id": "A26BV-2",
+          "criterion": "Remedy claims are supported by per-item evidence and public report omits private design details.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E26BV-1",
+          "acceptance": [
+            "A26BV-1",
+            "A26BV-2"
+          ],
+          "command": "independent raw CLI identity re-derivation and pinned-source policy audit",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase26b-report",
+          "notes": "Author corrected remedy claims; re-verification pending."
+        }
+      ],
+      "owner": {
+        "actor": "phase26_cli_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase26_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Identity-attribution research and independent verifier accepted; remedies are experimental, no board acceptance. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26b-report": "b9ff098830df43c2ab2aae8fb47d63fd478a9a8f9b75ce8f81159e9f7e0b2f7f"
+        }
+      }
+    },
+    {
+      "id": "T26AV",
+      "type": "verification",
+      "objective": "Independently verify six retained joins, per-step gates, final terminal debt and immutable accepted artifacts.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T25"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase25",
+      "write_paths": [],
+      "read_paths": [
+        "docs/agent-work/reliability/phase26/RESULT.md"
+      ],
+      "verifies": [
+        "T26A"
+      ],
+      "acceptance": [
+        {
+          "id": "A26AV-1",
+          "criterion": "Fresh independent checks confirm retained chain, no missing terminals, six strict restoration joins and zero added relevant identities per retained step.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A26AV-2",
+          "criterion": "Final candidate remains unpromoted and original-relative CLI/terminal refusal is accurately reported.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E26AV-1",
+          "acceptance": [
+            "A26AV-1",
+            "A26AV-2"
+          ],
+          "command": "independent frozen-hash, retained-chain, post-refill terminal/native remeasurement and gate audit",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase26a-result",
+          "notes": "Six joins confirmed, final canonical/accepted gates unverified; corrected verifier and replay accepted with intermittent shorting caveat."
+        }
+      ],
+      "owner": {
+        "actor": "phase26_reconnect_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase26_astra_reviewer",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Bounded experimental campaign and independent verification accepted; no board promotion. Native shorting intermittency is a residual limitation. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc"
+        }
+      }
+    },
+    {
+      "id": "T27A",
+      "type": "implementation",
+      "objective": "Harden four-board post-refill verifier completeness and hash validation, and stable route-offer identity, before another campaign.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T26A"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase26",
+      "write_paths": [
+        "docs/agent-work/reliability/phase27/VERIFIER.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase26/RESULT.md"
+      ],
+      "non_goals": [
+        "No board promotion or routing campaign",
+        "No rule/engine/gate weakening",
+        "No staging, commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A27A-1",
+          "criterion": "All four verifier boards have complete native captures and matching expected hashes; absent or mismatched inputs refuse.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A27A-2",
+          "criterion": "Retained-candidate metrics and exact anchor closure are derived only after refill/save/reopen and terminal comparison.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A27A-3",
+          "criterion": "Route-offer retry suppression uses stable anchor/layer/strategy identity and does not miss new alternatives after component merges.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E27A-1",
+          "acceptance": [
+            "A27A-1",
+            "A27A-2",
+            "A27A-3"
+          ],
+          "command": "phase27_tests.py; phase27_guards.py; phase27_dryrun.py",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase27a-verifier",
+          "notes": "92 tests pass, no skips; frozen CLI evidence correctly refuses under repaired provider; Astra accepted exact current hashes."
+        }
+      ],
+      "owner": {
+        "actor": "phase27_verifier_hardening",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "deferred_checks": [
+        "fresh-process and CLI project-sidecar binding corrections pending Astra re-review"
+      ],
+      "review": {
+        "reviewer_actor": "phase27_astra_acceptance",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Four-board verifier and fresh-process/provenance binding accepted; no board promotion. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27a-verifier": "9f5d7d6eeeff8d01be04f6a291ecae104c5d54369b3e6b5b17438f4e8b5b97c2"
+        }
+      }
+    },
+    {
+      "id": "T27B",
+      "type": "research",
+      "objective": "Diagnose intermittent three native shorting identities on unchanged board bytes with exact item attribution and no waiver.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [
+        "T26A"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-phase26",
+      "write_paths": [
+        "docs/agent-work/reliability/phase27/SHORTING.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase26/RESULT.md"
+      ],
+      "non_goals": [
+        "No board/rule/engine/gate mutation",
+        "No shorting-class waiver",
+        "No staging, commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A27B-1",
+          "criterion": "Repeated same-process and fresh-process native DRC captures isolate the three varying identities and source items on byte-identical boards.",
+          "requirement_ids": [
+            "R1",
+            "R3"
+          ]
+        },
+        {
+          "id": "A27B-2",
+          "criterion": "A fail-closed diagnostic and next hypothesis is supported without treating favourable reruns as acceptance.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E27B-1",
+          "acceptance": [
+            "A27B-1",
+            "A27B-2"
+          ],
+          "command": "phase27_tests.py; phase27_guards.py; independent re-derivation of 193 captures",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase27b-report",
+          "notes": "132 tests pass; 30 pairs invariant; original import duplicate UUIDs. Diagnosis accepted, proposed class-wide gate not approved."
+        }
+      ],
+      "owner": {
+        "actor": "phase27_shorting_diagnosis",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase27_astra_acceptance",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Bounded diagnosis accepted; no board, rule, engine, or gate changed; class-wide pair normalization rejected. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271"
+        }
+      }
+    },
+    {
+      "id": "T27BV",
+      "type": "verification",
+      "objective": "Independently rederive the phase-27 shorting diagnosis and safety limits from frozen reports and source.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phase27",
+      "write_paths": [],
+      "read_paths": [
+        "docs/agent-work/reliability/phase27/SHORTING.md"
+      ],
+      "verifies": [
+        "T27B"
+      ],
+      "acceptance": [
+        {
+          "id": "A27BV-1",
+          "criterion": "All 193 captured runs retain the same 30 shorting item pairs and the row multiplicity/provenance is independently reproduced.",
+          "requirement_ids": [
+            "R1",
+            "R3"
+          ]
+        },
+        {
+          "id": "A27BV-2",
+          "criterion": "Duplicate-UUID import and genuine-collision branches are identified as limits on any pair-level gate.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E27BV-1",
+          "acceptance": [
+            "A27BV-1",
+            "A27BV-2"
+          ],
+          "command": "independent re-derivation of 193 captures and source audit; phase27_tests.py",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase27b-report",
+          "notes": "Independent verifier found 30 stable pairs, 922 duplicated UUIDs on import and multiple genuine-short branches."
+        }
+      ],
+      "owner": {
+        "actor": "phase27_shorting_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase27_astra_acceptance",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Research verification accepted; no pair-level gate authorization. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271"
+        }
+      }
+    },
+    {
+      "id": "T28A",
+      "type": "implementation",
+      "objective": "Repair pointer-pair cache canonicalization in both RL and standard KiCad DRC providers; rebuild and validate without gate-policy change.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T27B"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-T27B",
+      "write_paths": [
+        "engine/kicad-patches/rl/drc_test_provider_rl_copper_clearance.cpp",
+        "engine/kicad-patches/kicad/pcbnew/drc/drc_test_provider_copper_clearance.cpp",
+        "patches/engine/0004-drc-pair-cache.patch",
+        "tools/reliability/check_engine_patches.py",
+        "docs/agent-work/reliability/phase28/RESULT.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase28/PLAN.md",
+        "docs/agent-work/reliability/phase27/SHORTING.md"
+      ],
+      "non_goals": [
+        "No board/rule/accepted-pointer change",
+        "No DRC gate policy waiver or pair normalization",
+        "No stage, commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A28A-1",
+          "criterion": "Both providers use the same canonical pair ordering in filter and visitor, with a reproducible patch and rebuilt loaded binaries.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A28A-2",
+          "criterion": "Deterministic and frozen-board differential tests preserve genuine shorting findings and eliminate duplicate-layer reporting without other relevant regressions.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A28A-3",
+          "criterion": "Versioned native/CLI provenance, terminal partitions, board/rule hashes and integrated harness are checked.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E28A-1",
+          "acceptance": [
+            "A28A-1",
+            "A28A-2",
+            "A28A-3"
+          ],
+          "command": "phase28_variants.py; phase28_differential.py; check_engine_patches.py; focused pytest",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase28a-result",
+          "notes": "499 unit, 144 native and patch reconstruction passed; independent raw-differential verification and Astra acceptance."
+        }
+      ],
+      "owner": {
+        "actor": "phase28_pair_gate",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "deferred_checks": [
+        "phase-26 replay through T27A after T27A acceptance"
+      ],
+      "review": {
+        "reviewer_actor": "phase27_astra_acceptance",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Source repair and exact-pair regression accepted; netless-first remains separate research; no board promotion. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1"
+        }
+      }
+    },
+    {
+      "id": "T27AV",
+      "type": "verification",
+      "objective": "Independently verify final phase-27 four-board verifier and fresh-process/CLI binding corrections.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phase27",
+      "write_paths": [],
+      "read_paths": [
+        "docs/agent-work/reliability/phase27/VERIFIER.md"
+      ],
+      "verifies": [
+        "T27A"
+      ],
+      "acceptance": [
+        {
+          "id": "A27AV-1",
+          "criterion": "Final verifier refuses missing or drifting four-board, project, rules, CLI provider and proof inputs, including library callers.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A27AV-2",
+          "criterion": "Fresh native process identity is enforced under inherited reuse and prior imports; diagnostic runs cannot retain.",
+          "requirement_ids": [
+            "R1"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E27AV-1",
+          "acceptance": [
+            "A27AV-1",
+            "A27AV-2"
+          ],
+          "command": "independent 92-test run, binding attack reproductions and live fresh-process probe",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase27a-verifier",
+          "notes": "Independent DeepSeek verified corrected project conflicts, live provenance, distinct servers and diagnostic-only replay."
+        }
+      ],
+      "owner": {
+        "actor": "phase27_verifier_independent",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "deferred_checks": [
+        "engine-backed integration until phase28 provider rebuild freezes"
+      ],
+      "review": {
+        "reviewer_actor": "phase27_astra_acceptance",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "T27A independent verification accepted. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27a-verifier": "9f5d7d6eeeff8d01be04f6a291ecae104c5d54369b3e6b5b17438f4e8b5b97c2"
+        }
+      }
+    },
+    {
+      "id": "T28BV",
+      "type": "verification",
+      "objective": "Independently verify reproducible reporter patch, both loaded providers and raw differential evidence.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phase28",
+      "write_paths": [],
+      "read_paths": [
+        "docs/agent-work/reliability/phase28/RESULT.md"
+      ],
+      "verifies": [
+        "T28A"
+      ],
+      "acceptance": [
+        {
+          "id": "A28BV-1",
+          "criterion": "Patch sequence reproduces both provider sources and rebuilt binaries under isolated read-only checks.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A28BV-2",
+          "criterion": "Raw pre/post captures preserve shorting pairs, genuine findings, other relevant classes and terminal partitions, with frozen inputs.",
+          "requirement_ids": [
+            "R1"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E28BV-1",
+          "acceptance": [
+            "A28BV-1",
+            "A28BV-2"
+          ],
+          "command": "isolated patch reproduction, raw capture recomputation, targeted public regression tests",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase28a-result",
+          "notes": "Independent verifier reproduced patch, differential, strict-harness evidence and final exact-pair tests."
+        }
+      ],
+      "owner": {
+        "actor": "phase28_independent_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "deferred_checks": [
+        "live binary-switch reproduction until T27A verifier owner releases build"
+      ],
+      "review": {
+        "reviewer_actor": "phase27_astra_acceptance",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Independent T28A verification accepted. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1"
+        }
+      }
+    },
+    {
+      "id": "T29N",
+      "type": "research",
+      "objective": "Diagnose netless-first same-logical-pad shorting suppression and its applicability to frozen V3 boards before routing.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T27B"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phase28",
+      "write_paths": [
+        "docs/agent-work/reliability/phase29/NETLESS_ORDER.md"
+      ],
+      "read_paths": [],
+      "non_goals": [
+        "No engine, board, rule, gate, accepted-pointer or version change",
+        "No commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A29N-1",
+          "criterion": "Synthetic forward/reverse ordering and source branch semantics are measured under repaired binaries.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29N-2",
+          "criterion": "Frozen V3 boards are audited for affected pad groups and load/save order sensitivity without changing source artifacts.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29N-3",
+          "criterion": "A minimal repair or safety invariant is proposed with private evidence and public aggregates only.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29N-1",
+          "acceptance": [
+            "A29N-1",
+            "A29N-2",
+            "A29N-3"
+          ],
+          "command": "source/probe/board-order diagnosis; phase29_leak_scan.py; phase29_manifest.py; Astra 78/78 manifest audit",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29n-report",
+          "notes": "Corrected diagnosis accepted; public leak scan clean; 78 of 78 private manifest entries independently verified."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_netless_order_diagnosis",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Corrected diagnosis; T29AV independently audited 78/78 manifest and narrower risk conclusions. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase29n-report": "b8b38566f4d5b0ff6a730586013c18e520e341f8b845417e1be69167d353729f"
+        }
+      }
+    },
+    {
+      "id": "T28C",
+      "type": "integration",
+      "objective": "Regenerate complete CLI evidence for both sides and replay six frozen phase-26 restoration steps under the repaired provider and accepted verifier.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T27A",
+        "T28A"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-T27A-T28A",
+      "write_paths": [
+        "docs/agent-work/reliability/phase28/REPLAY.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase27/VERIFIER.md",
+        "docs/agent-work/reliability/phase28/RESULT.md"
+      ],
+      "non_goals": [
+        "No board/rule/source/engine/accepted-pointer change",
+        "No routing or promotion",
+        "No commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A28C-1",
+          "criterion": "Both sides of all six frozen steps receive complete CLI evidence under the repaired loaded provider with actual provenance and no waiver.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A28C-2",
+          "criterion": "Six steps replay through accepted four-board verifier with complete terminals, stable native passes and exact hash binding; every refusal is preserved.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A28C-3",
+          "criterion": "Protected source/board/rule artifacts remain unchanged and public report contains aggregates only.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E28C-1",
+          "acceptance": [
+            "A28C-1",
+            "A28C-2",
+            "A28C-3"
+          ],
+          "command": "phase28_replay.py --out evidence --passes 3; phase28_tests.py; phase28_guards.py",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase28c-replay",
+          "notes": "Six historical steps retain; 14 tests, 33 protected hashes, public leak scan clean."
+        }
+      ],
+      "owner": {
+        "actor": "phase28_six_step_replay",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Historical six-step replay only; independently verified by T28CV. No current engine, routing or promotion authorization. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27a-verifier": "9f5d7d6eeeff8d01be04f6a291ecae104c5d54369b3e6b5b17438f4e8b5b97c2",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase28c-replay": "cce3372c1a8241cc72fada47a7359e42e2437b753ed44afa6d2daf403d6ca647"
+        }
+      }
+    },
+    {
+      "id": "T29A",
+      "type": "implementation",
+      "objective": "Repair order-dependent same-logical-pad shorting reporter in both providers and prove exact-pair behavior on synthetic and frozen boards.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T28A"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-accepted-T28A",
+      "write_paths": [
+        "patches/engine/",
+        "tests/engine/",
+        "docs/agent-work/reliability/phase29/REPAIR.md",
+        "engine/kicad-patches/rl/drc_test_provider_rl_copper_clearance.cpp",
+        "engine/kicad-patches/kicad/pcbnew/drc/drc_test_provider_copper_clearance.cpp",
+        "build_rl/"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase28/RESULT.md"
+      ],
+      "non_goals": [
+        "No board, rule, accepted-pointer, history, version, commit or push change",
+        "No waiver or severity change"
+      ],
+      "acceptance": [
+        {
+          "id": "A29A-1",
+          "criterion": "Both providers emit identical exact pairs once in both pad orders while preserving exemptions and other DRC behavior.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29A-2",
+          "criterion": "Patch reconstructs sources, rebuilt loaded native and CLI providers have matching provenance, and strict harness passes.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29A-3",
+          "criterion": "Frozen accepted board shows exactly the four diagnosed newly visible pairs with all other classes stable; private evidence and aggregate public report.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29A-1",
+          "acceptance": [
+            "A29A-1",
+            "A29A-2",
+            "A29A-3"
+          ],
+          "command": "targeted reporter tests, check_engine_patches.py, check_phase.sh --strict, frozen accepted-board differential",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29a-repair",
+          "notes": "499 unit, 146 native, patch reconstruction, loaded providers and exactly four additional accepted-board pairs."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_reporter_repair",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Frozen reporter repair accepted after T29AV independent verification; no routing/promotion authority. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69"
+        }
+      }
+    },
+    {
+      "id": "T28CV",
+      "type": "verification",
+      "objective": "Independently verify frozen six-step replay evidence and public report under repaired provider.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phase28",
+      "write_paths": [
+        "docs/agent-work/reliability/phase28/REPLAY_REVIEW.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase28/REPLAY.md"
+      ],
+      "verifies": [
+        "T28C"
+      ],
+      "acceptance": [
+        {
+          "id": "A28CV-1",
+          "criterion": "Independently recompute all six retain verdicts, CLI/native provenance and complete terminal gates from frozen raw packets.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A28CV-2",
+          "criterion": "Audit 33 protected hashes and public aggregates without modifying frozen evidence.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E28CV-1",
+          "acceptance": [
+            "A28CV-1",
+            "A28CV-2"
+          ],
+          "command": "verify_independent.py on frozen raw packets; 12 negative controls; 29/29 frozen hashes and four attributed post-replay provider drifts",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase28cv-review",
+          "notes": "Independent historical recomputation accepted; closure established from anchor indices, terminal partitions complete."
+        }
+      ],
+      "owner": {
+        "actor": "phase28_replay_independent",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Historical replay verification accepted; no claim on T29 provider. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29A expanded this test artifact after prior acceptance; Astra reviewed the changed test coverage and strict harness passed on the frozen T29A generation. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27a-verifier": "9f5d7d6eeeff8d01be04f6a291ecae104c5d54369b3e6b5b17438f4e8b5b97c2",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase28c-replay": "cce3372c1a8241cc72fada47a7359e42e2437b753ed44afa6d2daf403d6ca647",
+          "art-phase28cv-review": "74b2337415b133800bd00ebb0c236534cc4f8381d581c2dd1bde7a40ac4fa72a"
+        }
+      }
+    },
+    {
+      "id": "T29AV",
+      "type": "verification",
+      "objective": "Independently verify T29A reporter repair and corrected T29N diagnosis using loaded providers and frozen V3 boards.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-phase29",
+      "write_paths": [
+        "docs/agent-work/reliability/phase29/REPAIR_REVIEW.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase29/NETLESS_ORDER.md",
+        "docs/agent-work/reliability/phase29/REPAIR.md"
+      ],
+      "verifies": [
+        "T29N",
+        "T29A"
+      ],
+      "acceptance": [
+        {
+          "id": "A29AV-1",
+          "criterion": "Independent source, patch, loaded binary and strict-harness audit confirms exact one-pair behavior and no waivers.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29AV-2",
+          "criterion": "Three fresh native and two CLI complete passes per frozen board show exactly diagnosed shorting movement and no unexplained other-class or terminal change.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29AV-3",
+          "criterion": "Synthetic full comparison gate accepts unchanged and refuses newly introduced reachable mixed-netless finding; corrected diagnosis manifest and leak scan pass.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29AV-1",
+          "acceptance": [
+            "A29AV-1",
+            "A29AV-2",
+            "A29AV-3"
+          ],
+          "command": "independent synthetic both orders/providers, 3 native and 2 CLI frozen passes, synthetic comparison gate, strict harness and manifest audits",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29av-review",
+          "notes": "10 exact expected pairs, 11 forbidden absent; accepted board 30 to 34 with four diagnosed pairs; duplicate-ID baseline accounting preserved."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_repair_independent",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Verifier corrections accepted; 170/170 manifest, exact both-order controls. T29G updated this shared gate module; Astra reviewed the new source and strict tests; historical board evidence stays frozen.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29n-report": "b8b38566f4d5b0ff6a730586013c18e520e341f8b845417e1be69167d353729f",
+          "art-phase29av-review": "5e77445009894f3bd80aa0655a829eae1a5671d2ffec2ac1ce9efd09b653bcf8"
+        }
+      }
+    },
+    {
+      "id": "T29C",
+      "type": "integration",
+      "objective": "Refresh all six historical restoration comparisons under strict T29G evidence and measure disposable three-way common-fill comparisons, retaining original-relative obligations.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "depends_on": [
+        "T29A",
+        "T29G",
+        "T29P",
+        "T29GV"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29A-frozen",
+      "write_paths": [
+        "docs/agent-work/reliability/phase29/REBASELINE_REFRESH.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase29/REPAIR.md",
+        "docs/agent-work/reliability/phase29/EVIDENCE_VALIDATION.md",
+        "docs/agent-work/reliability/phase29/PROJECT_POLICY.md"
+      ],
+      "non_goals": [
+        "No source or frozen board/rule changes",
+        "No routing or promotion",
+        "No commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A29C-1",
+          "criterion": "All six historical joins replay under one new T29 engine generation with complete CLI/terminal/native evidence and independently established anchor closure.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29C-2",
+          "criterion": "Actual native comparison rejects increased or same-count substituted ambiguous findings and cannot retain with incomplete native evidence.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29C-3",
+          "criterion": "All inputs and duplicate-ID inventories pinned, original/accepted-relative gates captured, private raw evidence and aggregate public report, no promotion.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29C-4",
+          "criterion": "Fresh original-relative gates identify the exact remaining restoration debt and conditions for a lawful next routing campaign, without promoting a failed candidate.",
+          "requirement_ids": [
+            "R4"
+          ]
+        },
+        {
+          "id": "A29C-5",
+          "criterion": "For both original and accepted references, legally refill disposable R and C copies, prove unchanged non-fill semantics, and run fresh native, complete CLI, and terminal gates for R to F(R), F(R) to F(C), and mandatory R to F(C), with separate consumer/native/provider hashes.",
+          "requirement_ids": [
+            "R1",
+            "R4"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29C-final",
+          "acceptance": [
+            "A29C-1",
+            "A29C-2",
+            "A29C-3",
+            "A29C-4",
+            "A29C-5"
+          ],
+          "command": "p29c_tests.py (author 281 pass); bash tools/reliability/check_phase.sh --strict (640 unit, 146 native, patches); six-step and common-fill rebuild, mutation rebuild and guards",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29c-refresh",
+          "notes": "Accepted sixth freeze; private manifest fb0c69a8, comparator 3fa97a20. Native/CLI evidence reused only under verified bindings; no new capture or board promotion."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_rebaseline_refresh",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_result_review",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-29",
+        "independent": true,
+        "notes": "Astra accepted sixth frozen T29C after independent T29CV verified finite fold contract, exact ancestry exclusion, provenance, manifest and protected inputs; no board promotion.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29c-replay": "a4613dbd3155a94b940d44764cbdb4b148718c4286728ad219269ab2cf7ae08d",
+          "art-phase29g-report": "f9b570520bed3aad3ffd68099b342580fdcdfa8b0831f329494b0464eebe351b",
+          "art-phase29p-report": "be07aa3903143b721eb01a5d75cce6333fe2d5506ea33b289635c7e36095778a",
+          "art-phase29gv-review": "f99ce9b9889e33b213cfcb9c72dd26b55336f49013f8ed8b6452cb8141958243",
+          "art-phase29c-refresh": "5435a97664338184f8f956957de66a53e5c27b167cc57b84423fa6470f9786a5"
+        }
+      }
+    },
+    {
+      "id": "T29CV",
+      "type": "verification",
+      "objective": "Independently verify T29C repaired-engine replay, duplicate-ID native safety and candidate refusals.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29C",
+      "write_paths": [
+        "docs/agent-work/reliability/phase29/REBASELINE_REVIEW.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase29/REBASELINE_REFRESH.md"
+      ],
+      "verifies": [
+        "T29C"
+      ],
+      "acceptance": [
+        {
+          "id": "A29CV-1",
+          "criterion": "Independent raw-packet recomputation confirms six joins, exact T29 provider provenance, terminal closure and immutable inputs.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29CV-2",
+          "criterion": "Actual native comparison refuses same-count ambiguous substitution and incomplete binding evidence; no CLI-only acceptance.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29CV-3",
+          "criterion": "Independently reproduce measured original/accepted-relative and common-fill verdicts, preserve original-relative promotion obligations, and verify public/private manifests, immutability, and leak checks without assuming refusal in advance.",
+          "requirement_ids": [
+            "R1",
+            "R2",
+            "R4"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29CV-final",
+          "acceptance": [
+            "A29CV-1",
+            "A29CV-2",
+            "A29CV-3"
+          ],
+          "command": "Independent isolated correction6 matrix, envelope, coverage, manifest/protected-hash verification; bash tools/reliability/check_phase.sh --strict",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29cv-refresh",
+          "notes": "Verified 474-file manifest, 35 protected hashes, six envelopes and relation verdicts, exact generated-fill ancestry; no native/CLI remeasurement; author private 281 tests read-only."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_refresh_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "non_goals": [
+        "Prior independent snapshot review is recorded at art-phase29cv-refresh; rerun on corrected frozen T29C before acceptance",
+        "No author evidence or board writes"
+      ],
+      "review": {
+        "reviewer_actor": "phase29_astra_result_review",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-29",
+        "independent": true,
+        "notes": "Astra accepted independent T29CV on exact sixth snapshot, preserving original/accepted-relative promotion gates.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29c-replay": "a4613dbd3155a94b940d44764cbdb4b148718c4286728ad219269ab2cf7ae08d",
+          "art-phase29g-report": "f9b570520bed3aad3ffd68099b342580fdcdfa8b0831f329494b0464eebe351b",
+          "art-phase29p-report": "be07aa3903143b721eb01a5d75cce6333fe2d5506ea33b289635c7e36095778a",
+          "art-phase29gv-review": "f99ce9b9889e33b213cfcb9c72dd26b55336f49013f8ed8b6452cb8141958243",
+          "art-phase29c-refresh": "5435a97664338184f8f956957de66a53e5c27b167cc57b84423fa6470f9786a5",
+          "art-phase29cv-refresh": "4ffee34bb1a2ab679755ebad2344c6c3287bcd9bb99b9632a78159dc0b88d693"
+        }
+      }
+    },
+    {
+      "id": "T29G",
+      "type": "implementation",
+      "objective": "Fail closed on malformed or incomplete serialized native violation evidence in both consumers.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T29A"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29C",
+      "write_paths": [
+        "pcb_world/agent/drc_gate.py",
+        "tests/agent/",
+        "tools/reliability/verify_saved_artifact.py",
+        "docs/agent-work/reliability/phase29/EVIDENCE_VALIDATION.md",
+        "tools/reliability/check_phase.py",
+        "docs/agent-work/reliability/phase29/EVIDENCE_VALIDATION.md"
+      ],
+      "read_paths": [],
+      "non_goals": [
+        "No C++ provider, rule, board, comparison policy, accepted pointer, version, commit or push change"
+      ],
+      "acceptance": [
+        {
+          "id": "A29G-1",
+          "criterion": "Serializer-owned strict schema rejects missing/malformed/contradictory binding, ambiguity, row and accounting fields.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29G-2",
+          "criterion": "Verifier and saved-artifact consumers convert validation failures to explicit refusal; valid behavior unchanged.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29G-3",
+          "criterion": "Negative attack cases pass focused and integrated harness with private evidence and aggregate public report.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29G-1",
+          "acceptance": [
+            "A29G-1",
+            "A29G-2",
+            "A29G-3"
+          ],
+          "command": "Astra attack reproductions, both-consumer focused tests, check_phase.sh --strict",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29g-report",
+          "notes": "Structured refusal for missing/contradictory ambiguity and nested malformed keys; 640 unit, 146 native strict."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_evidence_validation",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Fail-closed native evidence schema accepted after T29GV independent attack audit.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29g-report": "f9b570520bed3aad3ffd68099b342580fdcdfa8b0831f329494b0464eebe351b"
+        }
+      }
+    },
+    {
+      "id": "T29P",
+      "type": "research",
+      "objective": "Establish whether accepted/restoration/original project sidecar differences change effective routing and DRC policy.",
+      "state": "accepted",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [
+        "T29A"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29C",
+      "write_paths": [
+        "docs/agent-work/reliability/phase29/PROJECT_POLICY.md"
+      ],
+      "read_paths": [],
+      "non_goals": [
+        "No changes to implementation, board/rule/project originals, accepted pointer, version, commit or push"
+      ],
+      "acceptance": [
+        {
+          "id": "A29P-1",
+          "criterion": "Exact frozen project sidecars compared for effective netclass/rule/severity/exclusion policy on identical board bytes under pinned KiCad generation.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29P-2",
+          "criterion": "Any effective change is named precisely; equivalence is shown by reproducible evidence if claimed.",
+          "requirement_ids": [
+            "R1",
+            "R3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29P-1",
+          "acceptance": [
+            "A29P-1",
+            "A29P-2"
+          ],
+          "command": "identical-board sidecar A/B matrix, 3 native passes, CLI runs, block bisect, 15 policy tests",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29p-report",
+          "notes": "Same board bytes have same effective policy/finding classes under both sidecars; zone-fill basis explains between-board gap."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_project_policy",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "Measured sidecar routing/DRC equivalence accepted after T29GV independent matrix audit.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29p-report": "be07aa3903143b721eb01a5d75cce6333fe2d5506ea33b289635c7e36095778a"
+        }
+      }
+    },
+    {
+      "id": "T29GV",
+      "type": "verification",
+      "objective": "Independently verify strict native evidence schema, both-consumer fail-closed behavior and sidecar-policy research.",
+      "state": "accepted",
+      "importance": "standard",
+      "requirements": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29G",
+      "write_paths": [
+        "docs/agent-work/reliability/phase29/EVIDENCE_VALIDATION_REVIEW.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase29/EVIDENCE_VALIDATION.md",
+        "docs/agent-work/reliability/phase29/PROJECT_POLICY.md"
+      ],
+      "verifies": [
+        "T29G",
+        "T29P"
+      ],
+      "acceptance": [
+        {
+          "id": "A29GV-1",
+          "criterion": "Original and Astra-discovered malformed/contradictory evidence cases refuse through both consumers with no crash; valid cases preserve intended comparison.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        },
+        {
+          "id": "A29GV-2",
+          "criterion": "Strict integrated harness and provenance pass; existing T29C payloads audited for schema compatibility and recapture scope.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29GV-3",
+          "criterion": "Sidecar policy conclusions independently checked against raw same-byte matrix and CLI/native captures.",
+          "requirement_ids": [
+            "R1",
+            "R3"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "E29GV-1",
+          "acceptance": [
+            "A29GV-1",
+            "A29GV-2",
+            "A29GV-3"
+          ],
+          "command": "independent 21-case real-serializer attack audit across two consumers, strict harness and same-byte sidecar matrix rehash",
+          "exit_status": 0,
+          "status": "pass",
+          "artifact": "art-phase29gv-review",
+          "notes": "All attacks structured refusal; positives unchanged; 640 unit/146 native strict, 97 private tests, 62-file policy manifest."
+        }
+      ],
+      "owner": {
+        "actor": "phase29_validation_independent",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "deferred_checks": [],
+      "review": {
+        "reviewer_actor": "phase29_astra_review_plan",
+        "reviewer_model": "gpt-6-astra",
+        "decision": "accept",
+        "at": "2026-09-28",
+        "independent": true,
+        "notes": "T29G/P independently verified; T29C requires fresh complete recapture.",
+        "verified_hashes": {
+          "art-phase23-result": "b68b34a5d2cb929600a08bd5363034c92331272ec84379dc892e20b48e0fc92b",
+          "art-phase23-gate": "61d085f99e88fa5f5d8f718ba5222165a5b7b1eb22588eae767e6b59c0774bac",
+          "art-phase23-runner": "36b0408f6addbebc78347f0e533574c8ff9b72d95ddc86e0b2ca60d294cd35a1",
+          "art-phase25-plan": "83a62e90b7059ce51cc76baa8c8ec28e3e27e7c61eb273e7365492dfde1d6fac",
+          "art-phase25-result": "fc2832320f85468b0023018191e16710c69722004be2dad9d5b2f9343a45182e",
+          "art-phase26a-plan": "5e3d7b666911aaba23245c5e139f30151d4feb8765d7fe73d779b43cb8b3934a",
+          "art-phase26a-result": "7b206f137bd3ad2f480e33559a60a1b28a3ec172c528df1b309c97e002a72dbc",
+          "art-phase27b-report": "9b461e9d634dc49fddeab6ca1b4d80971c39191b50e6adc6a9f6c224dfbe9271",
+          "art-phase28a-result": "498bf142967cc217530dd32ba21db25cf6edf4c25c8e8f87940c9af5dffb287f",
+          "art-phase28a-patch": "c8a319719928161f0d4bd1646ba23677099aaf9c9a54f1124e57c3d68ae34a63",
+          "art-phase28a-regression": "23b3634b5ffeefcccecb904eaad45edbb7057f17abd0f3cce3761c9691093d8f",
+          "art-phase28a-fixture": "2d4129f4c557e0cb80f0f7ea3162c8eff4233b1211c9740b00c203e1223825f1",
+          "art-phase29a-repair": "0df6b425e56c926a2ffdac0c2e4a52c0f48cbc488aefc3c6a1207b41d1098e69",
+          "art-phase29g-report": "f9b570520bed3aad3ffd68099b342580fdcdfa8b0831f329494b0464eebe351b",
+          "art-phase29p-report": "be07aa3903143b721eb01a5d75cce6333fe2d5506ea33b289635c7e36095778a",
+          "art-phase29gv-review": "f99ce9b9889e33b213cfcb9c72dd26b55336f49013f8ed8b6452cb8141958243"
+        }
+      }
+    },
+    {
+      "id": "T30R",
+      "type": "implementation",
+      "objective": "Run bounded restoration campaign on disposable experimental-candidate lineage after replay and verification acceptance.",
+      "state": "running",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R4"
+      ],
+      "depends_on": [
+        "T29C",
+        "T29CV"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29",
+      "write_paths": [
+        "docs/agent-work/reliability/phase30/RESTORATION.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase29/REBASELINE_REPLAY.md",
+        "docs/agent-work/reliability/phase29/REBASELINE_REVIEW.md"
+      ],
+      "non_goals": [
+        "No source EasyEDA or frozen board/rule mutation",
+        "No policy waiver or rule relaxation",
+        "No unrelated edit or data disclosure"
+      ],
+      "acceptance": [
+        {
+          "id": "A30R-1",
+          "criterion": "Begin with unvisited two-component link; at most 12 unique anchor pairs and five native transactions per link, with stable offer identities.",
+          "requirement_ids": [
+            "R4"
+          ]
+        },
+        {
+          "id": "A30R-2",
+          "criterion": "Each retained change has verified rollback for rejected transactions, saved/reopened candidate, all immediate-parent retention gates, and measured restoration debt.",
+          "requirement_ids": [
+            "R1",
+            "R4"
+          ]
+        },
+        {
+          "id": "A30R-3",
+          "criterion": "No accepted-pointer write; original- and accepted-relative promotion obligations remain explicit.",
+          "requirement_ids": [
+            "R1",
+            "R4"
+          ]
+        }
+      ],
+      "evidence": [],
+      "owner": {
+        "actor": "phase30_restoration",
+        "model": "deepseek/deepseek-v4.1-flash"
+      }
+    },
+    {
+      "id": "T30V",
+      "type": "verification",
+      "objective": "Independently verify restoration campaign and original/accepted-relative gates.",
+      "state": "queued",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2",
+        "R4"
+      ],
+      "depends_on": [],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29",
+      "write_paths": [
+        "docs/agent-work/reliability/phase30/RESTORATION_REVIEW.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase30/RESTORATION.md"
+      ],
+      "non_goals": [
+        "No source EasyEDA or frozen board/rule mutation",
+        "No policy waiver or rule relaxation",
+        "No unrelated edit or data disclosure"
+      ],
+      "acceptance": [
+        {
+          "id": "A30V-1",
+          "criterion": "Reproduce retained changes, rollback receipts, and immediate-parent gates from frozen campaign evidence.",
+          "requirement_ids": [
+            "R1",
+            "R4"
+          ]
+        },
+        {
+          "id": "A30V-2",
+          "criterion": "Run original- and accepted-relative native, CLI, terminal gates and distinguish routing gains from promotion eligibility.",
+          "requirement_ids": [
+            "R1",
+            "R2",
+            "R4"
+          ]
+        }
+      ],
+      "evidence": [],
+      "owner": {
+        "actor": "phase30_restoration_verifier",
+        "model": "deepseek/deepseek-v4.1-flash"
+      },
+      "verifies": [
+        "T30R"
+      ]
+    },
+    {
+      "id": "T29I",
+      "type": "integration",
+      "objective": "After code/evidence freeze, integrate accepted harness changes, version/history and scoped GitHub backup.",
+      "state": "running",
+      "importance": "important",
+      "requirements": [
+        "R1",
+        "R2"
+      ],
+      "depends_on": [
+        "T29C",
+        "T29CV"
+      ],
+      "workspace": "/Users/leo/Documents/PCBWorld-reliability",
+      "baseline_revision": "b3d62f5c37e7528670d112e03d9a90029f23f4f3+dirty-T29",
+      "write_paths": [
+        "HISTORY.md",
+        "CHANGELOG.md",
+        "pyproject.toml",
+        "docs/agent-work/reliability/phase29/INTEGRATION.md",
+        "docs/agent-work/reliability/phase5-kicad/RESULT.md",
+        "docs/agent-work/reliability/phase5-kicad/CHECKPOINT.md",
+        "README.md"
+      ],
+      "read_paths": [
+        "docs/agent-work/reliability/phase29/REBASELINE_REPLAY.md",
+        "docs/agent-work/reliability/phase29/REBASELINE_REVIEW.md"
+      ],
+      "non_goals": [
+        "No source EasyEDA or frozen board/rule mutation",
+        "No policy waiver or rule relaxation",
+        "No unrelated edit or data disclosure"
+      ],
+      "acceptance": [
+        {
+          "id": "A29I-1",
+          "criterion": "Combined strict harness, patch reconstruction, conflict and public leak checks pass on exact staged set.",
+          "requirement_ids": [
+            "R1"
+          ]
+        },
+        {
+          "id": "A29I-2",
+          "criterion": "One detailed scoped commit and push to existing GitHub fork backs up accepted public version; private board evidence and unrelated edits remain unstaged.",
+          "requirement_ids": [
+            "R1",
+            "R2"
+          ]
+        }
+      ],
+      "evidence": [],
+      "owner": {
+        "actor": "phase29_integration",
+        "model": "deepseek/deepseek-v4.1-flash"
+      }
+    }
+  ],
+  "checkpoint": {
+    "next": "T29C lexical/shared-envelope correction frozen; independent T29CV recheck plus hash discrepancy audit, then Astra acceptance. T30R held.",
+    "open_findings": [
+      "Global canonical atom aliases real numeric and quoted-token changes.",
+      "Missing/nonpositive native process IDs and capture-specific provenance/rule/waiver fields can retain.",
+      "Coverage totals omit raw nodes; tag-name normalization broader than evidenced paths.",
+      "Step envelope glob matches own output and verifier re-run changed that private aggregate; author must repair/re-freeze."
+    ],
+    "notes": "T29CV independent snapshot audit completed with REQUEST_CHANGES evidence; task queued for re-verification of corrected T29C. Historical review artifact retained; no acceptance."
+  }
+}

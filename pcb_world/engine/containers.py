@@ -14,6 +14,7 @@ from pcb_world.engine.wire import (  # noqa: F401  re-exports
     KRL_CONSTANT_NAMES,
     KRL_FIELDS,
     BoardEdge,
+    BoardItemInfo,
     BoardOutlineShape,
     BoundingBox,
     CleanupItem,
@@ -29,6 +30,8 @@ from pcb_world.engine.wire import (  # noqa: F401  re-exports
     TrackInfo,
     ViaInfo,
     ZoneInfo,
+    ZonePointHit,
+    ZonePointResult,
     from_wire,
     to_wire,
 )

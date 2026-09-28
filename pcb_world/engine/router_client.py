@@ -17,7 +17,9 @@ Performance model (spike-validated on the v0.27.1 ipc series):
   * ``batch_prewarm``: one roundtrip that executes a list of getters
     server-side and seeds the cache, so a fixed getter sequence
     (board snapshot, session state) costs one RPC.
-- no per-call timeout: shove has legitimate multi-minute outliers.
+- a monotonic absolute per-operation deadline supplied by the caller; long native
+  operations receive the remaining run budget, never a timeout renewed by each
+  partial socket read.
 
 Failure policy: a dead server (C++ crash) raises
 :class:`EngineServerCrashed` with the last op and the server stderr tail —
@@ -46,6 +48,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from typing import Callable
 import weakref
 
 from pcb_world.diag import read_rss_mb
@@ -192,7 +195,23 @@ def ipc_enabled() -> bool:
         "0", "false", "no")
 
 
-_STARTUP_DEADLINE_S = 120.0   # spawn → socket visible → connected → handshake
+_STARTUP_DEADLINE_S = 120.0   # upper cap; caller deadline may be shorter
+TimeoutProvider = Callable[[], float | None]
+
+
+def _deadline_from_timeout(timeout: float | None) -> float | None:
+    if timeout is None:
+        return None
+    return time.monotonic() + max(0.0, float(timeout))
+
+
+def _remaining(deadline: float | None) -> float | None:
+    if deadline is None:
+        return None
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError
+    return remaining
 
 
 class EngineServerCrashed(RuntimeError):
@@ -202,7 +221,7 @@ class EngineServerCrashed(RuntimeError):
 class _ServerConn:
     """One spawned server process + its socket."""
 
-    def __init__(self) -> None:
+    def __init__(self, call_timeout_s: float | "TimeoutProvider" | None = None) -> None:
         # Refusals come first, before anything is created: a refused spawn must
         # leave no krl_ipc_* dir or open stderr handle behind.
         if not os.path.isfile(_SERVER_SCRIPT):
@@ -212,6 +231,15 @@ class _ServerConn:
         # — the one guard call, shared with the in-process load site.
         import pcb_world.engine as _engine
         _engine.ensure_router_provenance()
+        self.call_timeout_s = call_timeout_s
+        startup_started = time.monotonic()
+        startup_timeout = self._timeout_value()
+        if startup_timeout is not None and startup_timeout <= 0:
+            raise EngineServerCrashed("engine server startup deadline already expired")
+        startup_deadline = startup_started + min(
+            _STARTUP_DEADLINE_S,
+            startup_timeout if startup_timeout is not None else _STARTUP_DEADLINE_S,
+        )
         self.tmpdir = tempfile.mkdtemp(prefix="krl_ipc_")
         self.sock: socket.socket | None = None   # kill() may run before connect
         sock_path = os.path.join(self.tmpdir, "s.sock")
@@ -230,19 +258,19 @@ class _ServerConn:
         )
         _LIVE_CONNS.add(self)    # after Popen: kill() needs self.proc
         self.pid: int = self.proc.pid   # _crashed() may report before handshake
-        deadline = time.monotonic() + _STARTUP_DEADLINE_S
         while True:
             if self.proc.poll() is not None:
                 tail = self._stderr_tail()   # read before kill() unlinks it
                 self.kill()
                 raise EngineServerCrashed(
                     "engine server died during startup\n" + tail)
-            if time.monotonic() > deadline:
+            if time.monotonic() >= startup_deadline:
                 self.kill()
                 raise EngineServerCrashed("engine server startup timed out")
             if os.path.exists(sock_path):
                 self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 try:
+                    self.sock.settimeout(_remaining(startup_deadline))
                     self.sock.connect(sock_path)
                     break
                 except (ConnectionRefusedError, FileNotFoundError):
@@ -252,18 +280,19 @@ class _ServerConn:
                     # (accept deadline). Keep polling — a server that exited
                     # is caught by poll() above with its stderr reason.
                     self.sock.close()
+                except TimeoutError:
+                    self.kill(deadline=startup_deadline)
+                    raise EngineServerCrashed("engine server startup timed out") from None
             time.sleep(0.005)
-        # The handshake is still startup: bound it by the same deadline (a
-        # server frozen after accept would otherwise hang us forever). The
-        # request loop after it is deliberately unbounded (shove = minutes).
-        self.sock.settimeout(max(1.0, deadline - time.monotonic()))
+        # The handshake is still startup: bound it by the same caller deadline
+        # (a server frozen after accept would otherwise hang us forever).
         try:
-            hs = self._recv("<handshake>")
+            hs = self._recv("<handshake>", startup_deadline)
         except TimeoutError:
-            self.kill()
+            self.kill(deadline=startup_deadline)
             raise EngineServerCrashed(
                 "engine server accepted the connection but sent no handshake "
-                f"within the {_STARTUP_DEADLINE_S:.0f} s startup deadline "
+                "within the bounded startup deadline "
                 "(process frozen?)") from None
         self.sock.settimeout(None)
         if hs.get("protocol") != PROTOCOL_VERSION:
@@ -282,18 +311,46 @@ class _ServerConn:
 
     # --- wire ---
 
-    def request(self, op: str, payload):
+    def _timeout_value(self) -> float | None:
+        value = self.call_timeout_s
+        if callable(value):
+            value = value()
+        return None if value is None else max(0.0, float(value))
+
+    def request(self, op: str, payload, *, deadline: float | None = None):
+        timeout_s = self._timeout_value()
+        if deadline is None:
+            deadline = _deadline_from_timeout(timeout_s)
         data = pickle.dumps((op, payload), protocol=pickle.HIGHEST_PROTOCOL)
         try:
+            self.sock.settimeout(_remaining(deadline))
             self.sock.sendall(_LEN.pack(len(data)) + data)
+        except TimeoutError:
+            self.kill(deadline=deadline)
+            raise EngineServerCrashed(
+                f"owned engine operation {op!r} exceeded its "
+                f"{timeout_s:.3f} s deadline; child reaped"
+            ) from None
         except OSError:
             # OSError (not just ConnectionError): after a crash killed this
             # conn, later calls hit the CLOSED socket (EBADF) — those must
             # surface as EngineServerCrashed too, or a broad guard that
             # swallowed the first raise would turn the crash into a naked
             # OSError at the next call site.
-            raise self._crashed(op) from None
-        reply = self._recv(op)
+            raise self._crashed(op, deadline=deadline) from None
+        try:
+            reply = self._recv(op, deadline)
+            if deadline is not None and time.monotonic() >= deadline:
+                raise TimeoutError
+        except TimeoutError:
+            self.kill(deadline=deadline)
+            raise EngineServerCrashed(
+                f"owned engine operation {op!r} exceeded its "
+                f"{timeout_s:.3f} s deadline; child reaped"
+            ) from None
+        finally:
+            if self.sock is not None and self.proc.poll() is None:
+                self.sock.settimeout(None)
         if reply.get("ok"):
             return reply["value"]
         exc_cls = getattr(builtins, reply.get("etype", ""), RuntimeError)
@@ -303,36 +360,40 @@ class _ServerConn:
             f"{reply.get('msg')}\n--- engine server traceback ---\n"
             f"{reply.get('tb', '')}")
 
-    def _recv(self, op: str):
-        hdr = self._recv_exact(_LEN.size, op)
+    def _recv(self, op: str, deadline: float | None = None):
+        hdr = self._recv_exact(_LEN.size, op, deadline)
         (n,) = _LEN.unpack(hdr)
-        return pickle.loads(self._recv_exact(n, op))
+        return pickle.loads(self._recv_exact(n, op, deadline))
 
-    def _recv_exact(self, n: int, op: str) -> bytes:
+    def _recv_exact(self, n: int, op: str, deadline: float | None = None) -> bytes:
         chunks = []
         while n:
             try:
+                self.sock.settimeout(_remaining(deadline))
                 b = self.sock.recv(min(n, 1 << 20))
-            except TimeoutError:  # only the handshake sets a timeout
+            except TimeoutError:
                 raise
             except OSError:      # incl. EBADF on an already-killed conn
                 b = b""
             if not b:
-                raise self._crashed(op)
+                raise self._crashed(op, deadline=deadline)
             chunks.append(b)
             n -= len(b)
         return b"".join(chunks)
 
-    def _crashed(self, op: str) -> EngineServerCrashed:
+    def _crashed(
+        self, op: str, *, deadline: float | None = None
+    ) -> EngineServerCrashed:
         # The EOF usually beats the exit status: give the reaper a moment so
         # the message carries the real code, then read stderr BEFORE kill()
         # closes the handle.
         try:
-            rc = self.proc.wait(timeout=1.0)
+            wait_s = 1.0 if deadline is None else max(0.0, deadline - time.monotonic())
+            rc = self.proc.wait(timeout=wait_s)
         except subprocess.TimeoutExpired:
             rc = None
         tail = self._stderr_tail()
-        self.kill()
+        self.kill(deadline=deadline)
         return EngineServerCrashed(
             f"engine server (pid {self.pid}, exit {rc}) died during "
             f"{op!r} — usually a fatal C++ signal; see var/crashlogs/ for "
@@ -362,7 +423,7 @@ class _ServerConn:
         except Exception:  # noqa: BLE001
             return False
 
-    def kill(self) -> None:
+    def kill(self, *, deadline: float | None = None) -> None:
         if self.sock is not None:
             try:
                 self.sock.close()
@@ -370,8 +431,9 @@ class _ServerConn:
                 pass
         if self.proc.poll() is None:
             self.proc.terminate()
+            wait_s = 5.0 if deadline is None else max(0.0, deadline - time.monotonic())
             try:
-                self.proc.wait(timeout=5)
+                self.proc.wait(timeout=wait_s)
             except subprocess.TimeoutExpired:
                 self.proc.kill()
                 self.proc.wait()
@@ -498,6 +560,7 @@ class RouterProxy:
 def acquire_router(
     board_path: str, project_path: str, seed: int,
     shove_iter_limit: int, followbranch_iter_limit: int,
+    call_timeout_s: float | "TimeoutProvider" | None = None,
 ) -> tuple[RouterProxy, str]:
     """Spawn-or-reuse a server, construct the remote router.
 
@@ -509,12 +572,15 @@ def acquire_router(
     conn: _ServerConn | None = None
     while _IDLE_SERVERS:
         cand = _IDLE_SERVERS.pop()
+        cand.call_timeout_s = call_timeout_s
         if cand.alive():
             conn = cand
             break
         cand.kill()
     if conn is None:
-        conn = _ServerConn()
+        conn = _ServerConn(call_timeout_s=call_timeout_s)
+    else:
+        conn.call_timeout_s = call_timeout_s
     try:
         info = conn.request("construct", {
             "board_path": str(board_path),

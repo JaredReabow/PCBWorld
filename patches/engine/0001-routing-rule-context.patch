@@ -1,0 +1,196 @@
+diff --git a/kicad-patches/rl/pns_rl_bindings.cpp b/kicad-patches/rl/pns_rl_bindings.cpp
+index 4349579..8e34dee 100644
+--- a/kicad-patches/rl/pns_rl_bindings.cpp
++++ b/kicad-patches/rl/pns_rl_bindings.cpp
+@@ -509,6 +509,23 @@ PYBIND11_MODULE( kicad_rl_router, m )
+         .def( "was_project_loaded_from_file", &PNS_RL_ROUTER::wasProjectLoadedFromFile,
+               "True if the .kicad_pro at get_project_path() was read from disk; "
+               "False means an in-memory blank project was used as fallback." )
++        .def( "get_routing_rules_path", &PNS_RL_ROUTER::getRoutingRulesPath,
++              "Design-rules file the ROUTING-time DRC engine was loaded from "
++              "(the project's <board>.kicad_dru). Empty when routing ran on "
++              "default netclass rules. NOTE: a loaded file is not proof that "
++              "routing obeyed it -- the PNS walkaround does not apply a file rule "
++              "to the temporary routed line on this build. Pass this path to "
++              "run_drc(rules_path) and reject copper that adds a violation." )
++        .def( "was_routing_rules_loaded_from_file", &PNS_RL_ROUTER::wasRoutingRulesLoadedFromFile,
++              "True only when the routing-time DRC engine actually read the "
++              "project's .kicad_dru from disk. A false here with a non-empty "
++              ".kicad_dru present means routing was NOT constraint-checked "
++              "against it; a true here means the rules are available to the "
++              "router's queries, not that the placement honoured them." )
++        .def( "get_last_drc_rules_load_error", &PNS_RL_ROUTER::getLastDrcRulesLoadError,
++              "Non-empty when the most recent requested rule file could not be "
++              "loaded; run_drc()/run_drc_incremental() fell back to default "
++              "rules and the result must not be reported as rule-checked." )
+         .def( "was_legacy_design_settings_loaded", &PNS_RL_ROUTER::wasLegacyDesignSettingsLoaded,
+               "True if the .kicad_pcb contained legacy (pre-KiCad 6) setup "
+               "tokens that populated BDS/NetSettings during parsing." )
+diff --git a/kicad-patches/rl/pns_rl_router.cpp b/kicad-patches/rl/pns_rl_router.cpp
+index ea1fa48..1053f1a 100644
+--- a/kicad-patches/rl/pns_rl_router.cpp
++++ b/kicad-patches/rl/pns_rl_router.cpp
+@@ -56,6 +56,7 @@
+ #include <project/net_settings.h>
+ #include <project.h>
+ #include <settings/settings_manager.h>
++#include <wildcards_and_files_ext.h>   // FILEEXT::DesignRulesFileExtension
+ 
+ #include <wx/filename.h>
+ #include <wx/log.h>
+@@ -110,6 +111,12 @@ PNS_RL_ROUTER::PNS_RL_ROUTER( const std::string& board_path,
+     : m_shoveIterLimit( shoveIterLimit ),
+       m_followBranchIterLimit( followBranchIterLimit )
+ {
++    // Kept for the routing-time design-rules lookup: pcbnew derives the rule
++    // file from the board path, and BOARD::GetFileName() is not populated by
++    // PCB_IO::LoadBoard in this headless path, so the constructor argument is
++    // the only reliable source of the board's location.
++    m_boardPath = board_path;
++
+     // Optionally make UUID generation deterministic BEFORE loading the board, so
+     // both the load and all subsequent routing draw a reproducible KIID stream. The
+     // PNS obstacle set is ordered by UUID, so a fixed seed makes routing — and
+@@ -288,14 +295,56 @@ void PNS_RL_ROUTER::initRouter()
+     if( !bds.m_DRCEngine )
+     {
+         auto drcEngine = std::make_shared<DRC_ENGINE>( m_board, &bds );
++
++        // Rule context. pcbnew's interactive DRC uses the project's own
++        // "<board>.kicad_dru"; this routing engine previously used the default
++        // (netclass-only) rules unconditionally, so routing and validation could
++        // disagree about the constraint set. Resolve the same path pcbnew's
++        // PCB_BASE_EDIT_FRAME::GetDesignRulesPath() resolves and load it here so
++        // the routing-time DRC engine holds the project's rules and can answer
++        // per-pair constraint queries from them.
++        //
++        // MEASURED LIMIT — do not read "loaded" as "enforced". On this build the
++        // PNS walkaround still does not apply a file rule to the temporary routed
++        // line: with a 1.0 mm clearance rule loaded it placed a ~0.25 mm-clearance
++        // path through a 1.0 mm corridor (tests/agent/test_native_rules.py). The
++        // engine's OWN validator does honour the file, so the supported way to
++        // rely on it is post-route acceptance: runDRC(rules_path) on the result and
++        // reject copper that adds a violation (pcb_world/agent/drc_gate.py). A
++        // caller must not treat getRoutingRulesPath() as proof that routing obeyed
++        // it.
++        wxFileName ruleFn( wxString::FromUTF8( m_boardPath ) );
++        ruleFn.SetExt( FILEEXT::DesignRulesFileExtension );
++        const wxString routingRulePath = m_project
++                ? m_project->AbsolutePath( ruleFn.GetFullName() )
++                : wxString();
++        const bool routingRulesExist = !routingRulePath.IsEmpty()
++                && wxFileName::FileExists( routingRulePath );
++
+         try
+         {
+-            drcEngine->InitEngine( wxFileName() );  // default rules: netclass-based
++            if( routingRulesExist )
++                drcEngine->InitEngine( wxFileName( routingRulePath ) );
++            else
++                drcEngine->InitEngine( wxFileName() );  // default rules: netclass-based
++
+             bds.m_DRCEngine = drcEngine;
++            m_routingRulesPath           = routingRulesExist
++                    ? routingRulePath.ToStdString() : std::string();
++            m_routingRulesLoadedFromFile = routingRulesExist;
++            m_lastDrcRulesLoadError.clear();
+         }
+         catch( ... )
+         {
+-            // Leave m_DRCEngine null on failure; router falls back to 0.
++            // Leave m_DRCEngine null on failure; router falls back to 0. The
++            // failed load is recorded rather than swallowed so a caller that
++            // required the rule file can refuse to route.
++            m_routingRulesPath.clear();
++            m_routingRulesLoadedFromFile = false;
++            m_lastDrcRulesLoadError = routingRulesExist
++                    ? ( "routing-time DRC rules failed to load: "
++                        + routingRulePath.ToStdString() )
++                    : std::string();
+         }
+     }
+ }
+@@ -1448,6 +1497,11 @@ void PNS_RL_ROUTER::runDRCEngine( const std::string& rules_path,
+                                   const std::vector<BOARD_ITEM*>* clearanceScope )
+ {
+     m_drcViolations.clear();
++    // Cleared here, set below when an explicitly requested rule file cannot be
++    // read. A requested-but-unloaded rule file is NOT a silent fall back to
++    // netclass rules: the caller is told (getLastDrcRulesLoadError()) and the
++    // environment layer refuses to treat the result as rule-checked.
++    m_lastDrcRulesLoadError.clear();
+ 
+     // Connectivity: the full DRC (clearanceScope == nullptr — the ground-truth path)
+     // rebuilds the whole graph from scratch. The incremental path relies on the graph
+@@ -1462,13 +1516,29 @@ void PNS_RL_ROUTER::runDRCEngine( const std::string& rules_path,
+     BOARD_DESIGN_SETTINGS& bds = m_board->GetDesignSettings();
+     auto engine = std::make_shared<DRC_ENGINE>( m_board, &bds );
+ 
++    // An explicitly requested rule file that is not there must not degrade into
++    // "ran with the default rules" without saying so: KiCad's loadRules() treats
++    // an unreadable path as no user rules at all. Check first, then load, and
++    // record either failure mode for getLastDrcRulesLoadError().
++    const wxString requestedRules = wxString::FromUTF8( rules_path );
++    const bool requestedRulesMissing =
++            !rules_path.empty() && !wxFileName::FileExists( requestedRules );
++
++    if( requestedRulesMissing )
++        m_lastDrcRulesLoadError = "DRC rules file not found: " + rules_path;
++
+     try
+     {
+-        engine->InitEngine( wxFileName( wxString::FromUTF8( rules_path ) ) );
++        if( requestedRulesMissing )
++            engine->InitEngine( wxFileName() );   // implicit rules only
++        else
++            engine->InitEngine( wxFileName( requestedRules ) );
+     }
+     catch( ... )
+     {
+-        // Best effort: board default rules only
++        // Best effort: board default rules only. Recorded, never silent.
++        if( !rules_path.empty() )
++            m_lastDrcRulesLoadError = "DRC rules failed to load: " + rules_path;
+     }
+ 
+     engine->SetProgressReporter( nullptr );
+diff --git a/kicad-patches/rl/pns_rl_router.h b/kicad-patches/rl/pns_rl_router.h
+index 30615ab..53c0acc 100644
+--- a/kicad-patches/rl/pns_rl_router.h
++++ b/kicad-patches/rl/pns_rl_router.h
+@@ -665,6 +665,22 @@ public:
+      */
+     bool wasProjectLoadedFromFile() const { return m_projectLoadedFromFile; }
+ 
++    // --- Rule context: interactive routing vs validation ---------------------
++    // The routing-time DRC engine (created in initRouter) is loaded from the
++    // project's own "<board>.kicad_dru" when that file exists, resolved the same
++    // way pcbnew's PCB_BASE_EDIT_FRAME::GetDesignRulesPath() resolves it. These
++    // accessors let a caller tell whether routing was actually constraint-checked
++    // against the file it expects, instead of trusting a "loaded" flag that a
++    // silent catch could have falsified.
++    //   getRoutingRulesPath()          : "" when default (netclass-only) rules
++    //                                    were used for routing
++    //   wasRoutingRulesLoadedFromFile(): true only when that path was read
++    //   getLastDrcRulesLoadError()     : non-empty when a REQUESTED rule file
++    //                                    failed to load (validation path)
++    std::string getRoutingRulesPath() const { return m_routingRulesPath; }
++    bool wasRoutingRulesLoadedFromFile() const { return m_routingRulesLoadedFromFile; }
++    std::string getLastDrcRulesLoadError() const { return m_lastDrcRulesLoadError; }
++
+     /**
+      * True when the .kicad_pcb contained legacy (pre-KiCad 6) setup tokens
+      * that populated BDS/NetSettings during parsing. Proxies
+@@ -1028,6 +1044,12 @@ private:
+     PROJECT*                               m_project  = nullptr;  ///< owned by m_settingsMgr
+     std::string                            m_projectPath;          ///< path associated with m_project
+     bool                                   m_projectLoadedFromFile = false; ///< true if .kicad_pro was read from disk
++    std::string                            m_boardPath;            ///< board file this router was built from
++
++    // Routing-time rule context (see the accessors above). Loaded in initRouter().
++    std::string                            m_routingRulesPath;             ///< "" = default netclass rules
++    bool                                   m_routingRulesLoadedFromFile = false;
++    std::string                            m_lastDrcRulesLoadError;        ///< set when a requested rule file failed
+ 
+     // DRC internals (incremental clearance).
+     void runDRCEngine( const std::string& rules_path,

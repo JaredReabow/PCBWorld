@@ -13,6 +13,7 @@ import os
 import traceback
 import warnings
 import weakref
+from typing import Callable
 
 from pcb_world.engine.containers import (
     BoardMeta,
@@ -192,6 +193,7 @@ class KiCadEngine:
         reject_if_stuck: bool = True,
         simplify_outline: bool = False,
         allow_default_rules: bool = False,
+        call_timeout_s: float | Callable[[], float | None] | None = None,
     ) -> None:
         """``engine_seed`` (default 77): seed KiCad's (process-global) KIID/UUID
         generator at construction for reproducible routing + UUID-keyed DRC across
@@ -264,7 +266,8 @@ class KiCadEngine:
             # here through ordinary proxy calls.
             self._r, board_path = acquire_router(
                 str(board_path), project_path or "", seed,
-                int(shove_iter_limit), int(followbranch_iter_limit))
+                int(shove_iter_limit), int(followbranch_iter_limit),
+                call_timeout_s=call_timeout_s)
         else:
             # Explicit in-process escape hatch (KICAD_ENGINE_IPC=0):
             # debugging/benchmark only — this loads the GPL .so into the
@@ -285,6 +288,11 @@ class KiCadEngine:
         # Register immediately after the native router exists, so even an engine
         # whose remaining __init__ fails is visible to the liveness guard.
         _LIVE_ENGINES.add(self)
+        #: The board file this engine loaded: the metadata authority for saves
+        #: (see ``_restore_saved_metadata``).
+        self.board_path = str(board_path)
+        #: Evidence of the last save's metadata restore, or None when none ran.
+        self.last_save_metadata_restore: dict | None = None
 
         # Post-load contract checks (see the strict load contract above).
         # ``close()`` before raising so the refused board does not leave a
@@ -342,6 +350,10 @@ class KiCadEngine:
         # Built on first use — pads are fixed for the life of the engine (reset
         # only strips copper). Read by pad_block_reason().
         self._thru_pads: list[tuple[float, float, float, int]] | None = None
+        # Zone-fill generation counter. Zone fill polygons are derived copper
+        # that only ``fill_zones()`` rewrites in place, so this is the version a
+        # cached zone-geometry answer is valid for (a reload is a new engine).
+        self.zone_fill_epoch = 0
 
     # --- Pad-adjacent placement guard ---
 
@@ -746,6 +758,51 @@ class KiCadEngine:
         self.drc_helper.update(violations)
         return violations
 
+    def fill_zones(self, rules_path: str = "") -> bool:
+        """Refill every zone's derived copper under ``rules_path``.
+
+        A zone fill is *derived* copper: it is computed from the zone outline,
+        its declared properties and the clearance constraints in force. When
+        those disagree with the stored fill — an imported board whose fill was
+        made with a different clearance, or a board whose rules changed — every
+        copper-vs-zone check is measured against geometry the current rules would
+        not produce. This recomputes it.
+
+        Only copper-zone fill polygons are recomputed. Non-copper zone fills can
+        contain converted silk or mask artwork that is not reproducible from an
+        outline; those polygons remain untouched. Zone outlines, nets, layers,
+        priorities, thermal settings, tracks, vias, footprints and locked copper
+        are left alone, and the router's DRC engine is restored afterwards.
+        Filling invalidates connectivity, which this call rebuilds.
+
+        One-shot board operation, not a transaction: a snapshot that records only
+        tracks and vias cannot restore fill polygons, so a refilled board needs
+        its own generation and whole-board verification. Returns ``True`` when the
+        filler completed.
+        """
+        try:
+            filled = bool(self._r.fill_zones(rules_path))
+        except Exception:
+            quarantined = False
+            try:
+                quarantined = bool(self._r.is_board_quarantined())
+            except Exception:
+                pass
+            if quarantined:
+                # A failed filler can leave some zone polygons changed. Closing
+                # the owned IPC child prevents any later query or route from
+                # treating that unverifiable board state as live.
+                self.close()
+            self.drc_helper.clear()
+            raise
+        # The native refill rebuilds connectivity and drops its incremental
+        # signatures; clear the mirrored Python cache at the same boundary.
+        self.drc_helper.clear()
+        # Zone fill polygons changed in place: bump the epoch every cached
+        # zone-geometry consumer keys on (pcb_world.agent.zone_coverage).
+        self.zone_fill_epoch += 1
+        return filled
+
     def clear_drc_cache(self) -> None:
         # Reset BOTH the C++ incremental-DRC state (m_drcViolations +
         # m_drcItemSig) AND the Python-side violation cache. Without the
@@ -820,6 +877,27 @@ class KiCadEngine:
         tokens that populated BDS/NetSettings during parsing."""
         return self._r.was_legacy_design_settings_loaded()
 
+    # --- Routing-time rule context ---------------------------------------
+    # Which design-rules file the *routing* DRC engine was built from. The engine
+    # resolves the project's "<board>.kicad_dru" the way pcbnew's
+    # PCB_BASE_EDIT_FRAME::GetDesignRulesPath() does; these accessors report what
+    # it actually loaded, so a caller can tell routing and validation apart. An
+    # engine build without them raises AttributeError, which
+    # ``pcb_world.agent.rules`` reports as "unanswerable" — never as "rules
+    # applied".
+
+    def get_routing_rules_path(self) -> str:
+        """Path of the .kicad_dru the routing-time DRC engine loaded ("" = none)."""
+        return self._r.get_routing_rules_path()
+
+    def was_routing_rules_loaded_from_file(self) -> bool:
+        """True only when that rule file was actually read from disk."""
+        return bool(self._r.was_routing_rules_loaded_from_file())
+
+    def get_last_drc_rules_load_error(self) -> str:
+        """Non-empty when the most recent requested rule file failed to load."""
+        return self._r.get_last_drc_rules_load_error()
+
     # --- I/O ---
 
     def save(self, output_path: str, project_output_path: str | None = None) -> None:
@@ -848,6 +926,36 @@ class KiCadEngine:
                 os.unlink(prl)
             except FileNotFoundError:
                 pass
+        self._restore_saved_metadata(output_path)
+
+    def _restore_saved_metadata(self, output_path: str) -> None:
+        """Copy back serialized metadata KiCad's writer drops.
+
+        A ``(net N)`` token an importer wrote on a non-copper graphic is inert -
+        KiCad coerces a non-copper item's net to 0, so connectivity and DRC never
+        read it - but the writer drops the token on the first save, losing the
+        user's metadata. ``pcb_world.agent.serialized_metadata`` copies exactly
+        those tokens back from the board this engine loaded, matched by the item
+        UUID and the net's name, and verifies the result before writing.
+
+        A failed restore leaves the engine's own bytes in place and records the
+        reason on :attr:`last_save_metadata_restore`; it never changes geometry.
+        """
+        self.last_save_metadata_restore = None
+        board_path = getattr(self, "board_path", None)
+        if not board_path or not os.path.isfile(board_path):
+            return
+        try:
+            from pcb_world.agent.serialized_metadata import restore_board_metadata
+
+            result = restore_board_metadata(board_path, output_path)
+        except Exception as exc:  # noqa: BLE001 - a failed restore must not raise
+            self.last_save_metadata_restore = {
+                "ok": False,
+                "problems": [f"{type(exc).__name__}: {exc}"],
+            }
+            return
+        self.last_save_metadata_restore = result.evidence()
 
     # --- Checkpoint / Restore (MCTS tree search) ---
 
@@ -1070,11 +1178,67 @@ class KiCadEngine:
     def get_pads(self):
         return self._r.get_pads()
 
+    def get_board_items(self):
+        """The complete identity-bearing item inventory.
+
+        One row per board item - copper, board drawings, zones, groups, and every
+        footprint with its pads, graphical items, fields, zones and groups - as
+        ``BoardItemInfo`` mirrors carrying ``uuid``, ``kind``, ``source``,
+        ``parent_kind``, ``parent_ref``, ``layer``, ``net_code`` and
+        ``physical_id``. Callers use it to check whether a UUID names exactly one
+        physical item before treating it as an identity; the DRC gate refuses to
+        resolve a UUID this list carries more than once.
+        """
+        return self._r.get_board_items()
+
     def get_keepouts(self):
         """Rule-area keepout zones as ZoneInfo objects (one per zone per copper
         layer). Each carries the outline ``pts`` (list of (x_mm, y_mm)), the
         board ``layer``, and per-item ``keepout_tracks/vias/pads`` flags."""
         return self._r.get_keepouts()
+
+    def get_zone_point_hits(self, points, window_mm: float = 0.0):
+        """Read-only point-in-zone query: what zone geometry covers each point.
+
+        ``points`` is an iterable of ``(x_mm, y_mm, board_layer)`` triples —
+        **board** layers, the same numbering ``get_keepouts()`` reports and
+        ``get_connected_points()`` accepts; callers holding human layers
+        (1 = top) convert with ``layer_map.human_to_board``. The argument is
+        sent as a tuple of tuples, which keeps it hashable: the engine-IPC
+        proxy caches read-only calls by their arguments, and a list would both
+        defeat that cache and raise on the cache lookup.
+
+        ``window_mm`` bounds which zones are reported: a zone is a hit when the
+        point is inside its outline, inside its fill, or within ``window_mm`` of
+        that fill. A caller testing ``hit.distance_mm < margin_mm`` must pass
+        ``window_mm >= margin_mm``, or a zone close enough to fail that test can
+        be left out of the answer.
+
+        One :class:`~pcb_world.engine.wire.ZonePointResult` comes back per
+        query, in query order, each carrying **every** zone covering that point
+        on that layer (all nets — an overlap is reported, never hidden behind
+        one net) plus the distance to that zone's filled copper. Advisory only:
+        the native DRC remains the authority on whether a plan may be kept.
+
+        The zone fills this reads are the ones the loaded board carries;
+        KiCad clears its own refill flag at load and keeps no fill hash across
+        processes, so ``fill_provenance`` says ``loaded_unverified`` rather than
+        claiming the fill matches the current rules.
+
+        ``None`` is returned when the engine build predates the accessor, so a
+        caller can tell "no answer available" from "no zone here".
+        """
+        getter = getattr(self._r, "get_zone_point_hits", None)
+        if getter is None:
+            return None
+        window = max(0.0, float(window_mm))
+        queries = tuple(
+            (float(point[0]), float(point[1]), int(point[2]), window)
+            for point in points
+        )
+        if not queries:
+            return []
+        return getter(queries)
 
     def get_footprints(self):
         """Components as FootprintInfo objects.
@@ -1144,6 +1308,20 @@ class KiCadEngine:
 
     def get_ratsnest(self):
         return self._r.get_ratsnest()
+
+    def get_pad_cluster_members(self) -> list[tuple[int, list[str]]]:
+        """Per net, physical pad UUIDs that share one connectivity cluster.
+
+        ``get_pad_groups`` counts how many groups a net has; two boards can agree
+        on that count while a *different* set of pads is joined. This returns the
+        membership itself, which is what a connectivity acceptance check needs.
+
+        Reads COMMITTED board connectivity (same contract as ``get_pad_groups``).
+        """
+        return [
+            (int(net_code), [str(name) for name in members])
+            for net_code, members in self._r.get_pad_cluster_members()
+        ]
 
     def get_pad_groups(self) -> dict[int, int]:
         """{net_code: number of distinct pad groups on that net}.

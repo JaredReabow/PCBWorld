@@ -62,8 +62,92 @@ class PadInfo(NamedTuple):
     net_name: str
     pad_name: str
     footprint_ref: str
+    uuid: str
+    physical_id: str
     pad_type: str
     shape: str
+
+
+class BoardItemInfo(NamedTuple):
+    """One row of the complete identity-bearing item inventory.
+
+    ``get_board_items()`` reads every container the board owns - copper lists,
+    board drawings, zones and groups, and each footprint with its pads,
+    graphical items, fields, zones and groups - so it can answer the identity
+    question the copper accessors cannot: does this UUID name exactly one
+    physical item? ``kind`` classifies the item (``source`` names the container
+    it came from); items with no UUID are still emitted, because "this item
+    exists and names no identifier" is itself identity evidence.
+    """
+
+    uuid: str
+    kind: str
+    source: str
+    parent_kind: str
+    parent_ref: str
+    layer: int
+    net_code: int
+    physical_id: str
+
+
+class ZonePointHit(NamedTuple):
+    """One zone covering a queried point on a queried copper layer.
+
+    A point/layer can be covered by several zones at once, so
+    ``get_zone_point_hits()`` returns every covering zone - all nets - rather
+    than a single one that would hide the others.
+
+    ``distance_mm`` is the distance from the query point to this zone's *filled
+    copper* on this layer: 0.0 on copper, the distance to the nearest fill edge
+    or void wall otherwise, and -1.0 when the zone carries no fill polygons for
+    the layer. It is the geometry a caller needs to test a copper object of
+    radius R that needs clearance C (``distance_mm < R + C``).
+
+    ``fill_provenance`` is not a currency claim: KiCad clears ``NeedRefill()``
+    when a board is parsed, so the engine cannot prove the loaded fill matches
+    the loaded rules. Values: ``loaded_unverified`` (fill came from the loaded
+    board), ``no_fill`` (this zone has no fill polygons for this layer) or
+    ``unknown`` (the zone could not be evaluated).
+    """
+
+    zone_uuid: str
+    name: str
+    source: str
+    layer: int
+    net_code: int
+    is_rule_area: bool
+    keepout_flags: int
+    in_outline: bool
+    in_fill: bool
+    fill_is_island: bool
+    distance_mm: float
+    fill_provenance: str
+
+
+class ZonePointResult(NamedTuple):
+    """One ``get_zone_point_hits()`` answer, with every covering zone in ``hits``.
+
+    ``status`` is ``resolved`` only when every zone on that layer was evaluated;
+    otherwise it is ``unknown`` and ``reason`` says why - and a consumer must
+    treat unknown as unknown, never as safe.
+
+    ``classification`` resolves the copper question only: ``no_zone``,
+    ``outline_only``, ``fill_single_net`` (``fill_net_code`` names the one net),
+    ``fill_multi_net`` (several nets of pour copper cover the point - a conflict,
+    so no single net is named) or ``unknown``.
+    """
+
+    query_index: int
+    layer: int
+    status: str
+    reason: str
+    classification: str
+    fill_net_code: int
+    in_keepout: bool
+    keepout_flags: int
+    fill_provenance: str
+    zones_tested: int
+    hits: list
 
 
 class RatsnestEdge(NamedTuple):
@@ -231,6 +315,9 @@ _WIRE_TYPES = {
     "TrackInfo": TrackInfo,
     "ViaInfo": ViaInfo,
     "PadInfo": PadInfo,
+    "BoardItemInfo": BoardItemInfo,
+    "ZonePointHit": ZonePointHit,
+    "ZonePointResult": ZonePointResult,
     "RatsnestEdge": RatsnestEdge,
     "ClusterPoint": ClusterPoint,
     "ZoneInfo": ZoneInfo,
