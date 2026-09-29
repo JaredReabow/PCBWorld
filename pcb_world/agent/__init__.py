@@ -15,6 +15,21 @@ and ``PCBWorld.step`` are unchanged:
   ``connect_targets`` / ``probe_candidates`` API over one engine.
 * :mod:`pcb_world.agent.tool_api` — the JSON tool surface a model can call
   (token required, named modes, structured results).
+* :mod:`pcb_world.agent.ledger` — the bounded native-transaction ledger: four
+  hard ceilings, charge-before-call persistence, symmetric alias merging with
+  rollback, and cumulative/per-link resume reconciliation.
+* :mod:`pcb_world.agent.interruption_guard` — the fail-closed guard for an
+  interrupted campaign: a file-facing preflight that reads and hashes the
+  record and parent bytes before any write or engine open, a completion gate
+  before a record is published, and a guarded bind/advance.
+
+The guard's *pure* helpers (``preflight_ledger``, ``classify_ledger``,
+``charge_attribution``) are deliberately not re-exported here. They answer an
+accounting question about an object handed to them; their ``resume_safe`` and
+``complete`` flags are not an identity check and not permission to route. Call
+``interruption_guard_preflight_campaign`` for a verdict backed by real bytes, or
+import the helpers from ``pcb_world.agent.interruption_guard`` when that is
+exactly what is wanted.
 
 Typical use::
 
@@ -53,6 +68,49 @@ from pcb_world.agent.drc_gate import (
     take_violations,
     violation_key,
 )
+from pcb_world.agent.interruption_guard import (
+    CampaignPreflightRefusal,
+    CompletedRecordRefusal,
+    DIGEST_NAME,
+    GUARD_SCHEMA,
+    STATUS_ACTIVE,
+    STATUS_FRESH,
+    STATUS_INTERRUPTED,
+    STATUS_QUARANTINED,
+    InterruptedCampaignRefusal,
+    completed_record_gate,
+    interruption_guard_preflight_campaign,
+    publish_completed_record,
+    quarantine_note,
+    sha256_file,
+)
+from pcb_world.agent.ledger import (
+    LEDGER_SCHEMA,
+    MAX_ANCHOR_PAIRS_PER_LINK,
+    MAX_LINKS_PER_CAMPAIGN,
+    MAX_TRANSACTIONS_PER_CAMPAIGN,
+    MAX_TRANSACTIONS_PER_LINK,
+    REFUSED_SCHEMA,
+    AliasMap,
+    LinkCeilingError,
+    LinkIdentityConflict,
+    LinkLedger,
+    LinkLedgerError,
+    LinkStateCorruption,
+    LinkTransactionLimit,
+    StableLinkBudget,
+    Ticket,
+    enforce_anchor_pair_ceiling,
+    enforce_campaign_totals,
+    enforce_link_ceiling,
+    enforce_transaction_ceiling,
+    recorded_charges,
+    reconcile_record_identities,
+    reconcile_resume_charges,
+    run_link_budget,
+    stable_identity,
+    validate_campaign_record,
+)
 from pcb_world.agent.rules import (
     RuleContext,
     RulesUnavailableError,
@@ -89,26 +147,50 @@ __all__ = [
     "ActionValidator",
     "AgentSession",
     "AgentSnapshot",
+    "AliasMap",
     "BoardLimits",
     "CandidateProbe",
+    "CampaignPreflightRefusal",
     "CONNECTIVITY_ERROR_CODES",
     "CONNECTIVITY_ERROR_TYPES",
+    "CompletedRecordRefusal",
     "ConnectionResult",
+    "DIGEST_NAME",
     "DrcDelta",
     "DrcGate",
     "Endpoint",
+    "GUARD_SCHEMA",
     "InvalidActionError",
+    "InterruptedCampaignRefusal",
+    "LEDGER_SCHEMA",
+    "LinkCeilingError",
+    "LinkIdentityConflict",
+    "LinkLedger",
+    "LinkLedgerError",
+    "LinkStateCorruption",
+    "LinkTransactionLimit",
+    "MAX_ANCHOR_PAIRS_PER_LINK",
+    "MAX_LINKS_PER_CAMPAIGN",
+    "MAX_TRANSACTIONS_PER_CAMPAIGN",
+    "MAX_TRANSACTIONS_PER_LINK",
     "MODE_INT_TO_NAME",
     "MODE_NAME_TO_INT",
     "MODE_NAMES",
     "Outcome",
+    "REFUSED_SCHEMA",
     "RuleContext",
     "RulesUnavailableError",
     "SCHEMA_VERSION",
+    "STATUS_ACTIVE",
+    "STATUS_FRESH",
+    "STATUS_INTERRUPTED",
+    "STATUS_QUARANTINED",
     "SUPPORTED_SCHEMA_VERSIONS",
     "StaleStateError",
     "StateProbe",
     "StructuredAction",
+    "StableLinkBudget",
+    "Ticket",
     "TransactionStep",
     "ViolationSet",
     "allowed_actions",
@@ -116,19 +198,34 @@ __all__ = [
     "canonical_action_names",
     "canonical_rows",
     "coerce_action",
+    "completed_record_gate",
+    "enforce_anchor_pair_ceiling",
+    "enforce_campaign_totals",
+    "enforce_link_ceiling",
+    "enforce_transaction_ceiling",
     "engine_lock",
     "engine_rule_status",
     "geometry_digest",
+    "interruption_guard_preflight_campaign",
     "is_connectivity_finding",
     "mode_to_int",
     "mode_to_letter",
     "nets_changed",
     "new_session_id",
     "parse_token",
+    "publish_completed_record",
+    "quarantine_note",
+    "recorded_charges",
+    "reconcile_record_identities",
+    "reconcile_resume_charges",
     "resolve_rule_context",
     "rows_digest",
+    "run_link_budget",
+    "sha256_file",
+    "stable_identity",
     "state_fingerprint",
     "take_violations",
     "unverifiable_properties",
+    "validate_campaign_record",
     "violation_key",
 ]

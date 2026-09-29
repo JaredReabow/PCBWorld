@@ -6,7 +6,132 @@ with its own version line — its notes are in the
 — and every environment tag pins exactly one engine commit: check out the tag and run
 `git submodule update --init` to get the engine it was tested with.
 
+## v1.2.0 — 2026-09-29 — bounded native-transaction ledger and interrupted-campaign guard
+
+### The ledger (`pcb_world.agent.ledger`) — 2026-09-29
+- **Four hard ceilings, not defaults.** Five native transactions per stable logical
+  link, twelve distinct anchor pairs per link, twelve links per campaign and sixty
+  native transactions per campaign. A caller may ask for a tighter value and never a
+  looser one; every ceiling is re-validated at construction, when a ledger is restored
+  from disk and again on every reservation and pair offer, so a raised ceiling in a
+  file or in a mutated object is refused rather than honoured. The sixth transaction
+  on a link cannot be expressed: the only way to obtain a licence for a native call
+  is a ticket from a budget that still has one.
+- **Charged before the call, and cumulative across resumes.** `reserve` writes the
+  charge through to disk before the caller issues its native call, so a crash inside a
+  transaction still charges that attempt on the next resume. Charges are never reset;
+  a resume finds the same budget for the same link because the identity is the
+  canonical, order-independent pair of component identities with the engine's net
+  renumbering normalised away.
+- **Aliases are symmetric and merge conservatively.** Declaring two component names
+  equivalent unions their budgets - counters add, anchor sets union, nothing is reset -
+  and a merge that would break a ceiling or combine two different retained joins is
+  refused with the equivalence itself rolled back, so a swallowed refusal cannot leave
+  one logical link able to spend twice.
+- **A resume is reconciled per link, not per total.** A record whose history charges a
+  link the ledger does not hold, that accounts for a different count on a link, that
+  leaves charges parked on a link no record visited, or whose declared totals disagree
+  with the ledger is refused. A total-only check would accept 5+1 rewritten as 1+5.
+
+### The interruption guard (`pcb_world.agent.interruption_guard`) — 2026-09-29
+- **A pre-charged, unbound ledger is no longer adoptable.** A fresh invocation whose
+  ledger already carries charges, links or anchor pairs and is not bound to a campaign
+  record is classified `interrupted` and refused, with no write and no engine open - the
+  shape a killed launch leaves behind, where a continuation would otherwise take the
+  fresh path and publish a record its own validator can never resume.
+- **The file-facing preflight reads the bytes an identity claim is made from.**
+  `interruption_guard_preflight_campaign` reads and hashes the campaign record and the
+  parent board it declares, requires the record's named ledger to be the ledger being
+  preflighted, requires a `current-record` binding or the permitted
+  `interrupted-finalization` predecessor binding, stages alias declarations in memory
+  and only then reconciles - all before the caller's first `mkdir`, first write or first
+  engine open. The pure helpers stay low-level: their `resume_safe`/`complete` flags are
+  accounting statements, not identity checks and not permission to route, and they are
+  deliberately not re-exported as an authorization API.
+- **A completed record is gated, identified and lineage-checked before it is published
+  or bound.** The whole cumulative and per-link history must account for every charge
+  the ledger holds; then the record's named `ledger_file` must be this ledger's own
+  path and the parent board's actual bytes must hash to the digest the record declares
+  (the same helper the preflight uses, so the two cannot disagree); then a continuation
+  must present the file of the record it continues; that file must itself be a
+  completed campaign record for this ledger - validated by the limiter's own
+  `validate_campaign_record` and identified by the same helper the preflight uses,
+  so a bare JSON object with a `previous_record_sha256` field is refused - and its
+  digest must be either the ledger's current binding or an interrupted finalization
+  its own bytes verify. An older in-chain digest is refused as an old record and a
+  chain that does not end at its binding is refused as broken - each before the
+  first `mkdir` and the first write, so a refused publication leaves the filesystem
+  byte-identical. Publication and binding are one step, and a crash between the two
+  writes is still recoverable because the successor declares the binding as its own
+  predecessor.
+
+### Verification — 2026-09-29 (corrections 1 and 2 of the rework applied)
+- **49 engine-free unit tests** (`tests/agent/test_ledger_unit.py`,
+  `tests/agent/test_interruption_guard.py`), both wired into the combined unit group of
+  `tools/reliability/check_phase.py`. They cover all four ceilings, persistence and
+  reloads, alias merges and rollback, no-charge resets, interrupted and unbound evidence,
+  missing records, extra settled and unsettled charges, redistribution at equal totals,
+  malformed and wrong-identity inputs, the positive fresh/resumed/interrupted-finalization
+  paths, and byte-for-byte snapshots proving that every refusal writes nothing and opens
+  no engine.
+- **39 mutation checks, all caught.** Each test module runs its own invariant battery
+  against 19 (ledger) and 20 (guard) deliberately broken copies of the source in a fresh
+  interpreter; a mutation that the battery accepts fails the test, so a silent regression
+  in any invariant cannot pass the suite. Ten of the guard mutations cover the checks
+  the two corrections added to the publication API.
+- **`EXPECTED_NATIVE_TESTS` corrected to 146.** The strict gate carried 144 while a fresh
+  `--collect-only` over the native group collects 146, which would have let two native
+  tests disappear unnoticed.
+
+### Limits, stated — 2026-09-29
+- The ledger is a **single-writer** store: it persists by writing the whole file, and
+  nothing here serialises two processes against one path. Durable journaling - a
+  crash-safe record of a transaction in flight - remains design-only and is not
+  implemented.
+- The ledger's binding advance trusts the predecessor digest its caller supplies, because
+  it cannot open a record file. The composed **preflight** and the guarded
+  **publication** step are what make that legitimate: publication verifies the supplied
+  predecessor file's bytes and its declared lineage before it writes, so a run must not
+  advance a binding by any other path.
+- Version: `pyproject.toml` moves from `1.1.0` to `1.2.0`, and the `README.md`
+  `<!--VERSION-->` marker moves to `v1.2.0` with it.
+
 ## v1.1.0 — 2026-09-29 — agent reliability layer
+
+### Phase 30 bounded recovery, refused, and independently verified (T31D) — 2026-09-29
+- **The capped campaign held its budget and still refused.** T30R2 re-ran phase
+  30's recovery idea under the accepted limiter - at most five charged native
+  calls per stable logical link, twelve links, sixty transactions across all
+  resumes - and conserved the cap: **55 of 60** charges, **12 links**, no link
+  above five. Two joins were retained, taking the restoration debt from twelve
+  to nine, but the final candidate is not promotable, the campaign is
+  quarantined at 55/60 and the accepted pointer did not move. Account:
+  `docs/agent-work/reliability/phase30/BOUNDED_RECOVERY.md`.
+- **A killed launch kept the accounting honest and broke the record.** A first
+  launch died after charging seven transactions and writing no campaign record;
+  the continuation ran from the same ledger, so the ceiling held cumulatively
+  (55) while the continuation's own record accounts for 48. The frozen record
+  therefore fails the limiter's own `validate_campaign_record` and
+  `reconcile_resume_charges`, and cannot serve as a resume base.
+- **Rollback coverage is narrowed, append-only.** The campaign's own report said
+  every rejected transaction carried a proven rollback; the frozen evidence
+  supports that for the 46 resumed rejections only. The seven killed-launch
+  charges - six settled records plus one unsettled reservation - carry no
+  per-attempt receipt, so restart isolation is all that is proved for them and
+  whether the killed attempts changed copper is unknown; the criterion requiring
+  a proven rollback for every rejection is unmet and the author campaign stands
+  at REQUEST_CHANGES. The phase-31 successor replaces that path with a fail-closed
+  refusal and a prepublish history validation; durable journaling stays
+  design-only. The clarification is recorded in `HISTORY.md` and the new phase-30
+  page; no earlier entry was edited and no broad rollback proof is claimed.
+- **Independent verification, and no promotion.** T30R2V recounted the charges,
+  re-hashed all 108 frozen artefacts and 24 protected inputs, and re-measured the
+  boards with fresh processes and complete pinned CLI gates. The final candidate
+  adds nineteen relevant native identities (all isolated-copper) and eighteen
+  terminal split relations against the accepted generation and the canonical
+  original, with both CLI gates refused; the same deviation is already present in
+  the frozen T30R start, and the final candidate is clean against it. Eligibility
+  is not met, and the accepted pointer is unchanged.
 
 ### Phases 25-29 integrated, and one scoped backup (T29I) — 2026-09-29
 - **Journalled, then integrated.** Phases 25-29 shipped their own plan and

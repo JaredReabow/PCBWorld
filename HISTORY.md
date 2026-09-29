@@ -2904,3 +2904,281 @@ The ledger validates with zero errors and zero warnings, and its 21-entry review
 snapshot binds the corrected integration and review pages by content hash. The
 follow-up's own commit and tree are recorded in the handoff packet returned to
 Astra, because a file cannot carry the hash of the commit that contains it.
+
+## 2026-09-29 — phase 30: the bounded recovery trial, its refusal, and the rollback clarification (T31D)
+
+Phase 30's first campaign (T30R) overran its allocation and was kept as
+evidence rather than as a result. T30R2 was the bounded answer: the same driver
+under a limiter that charges each native call before it is made, holding the
+campaign to five charged native calls per stable logical link, twelve links and
+sixty transactions across all resumes. It conserved the cap - **55 of 60**
+native transactions across **12 links**, no link above five - and retained **two
+joins**, taking the remaining restoration joins from twelve to nine. It was
+still not promotable, and its record does not resume, so no board candidate was
+accepted and the accepted pointer did not move - the independent verification
+itself was accepted, but as a diagnosis only. The sanitised public account is
+[phase 30 BOUNDED_RECOVERY](docs/agent-work/reliability/phase30/BOUNDED_RECOVERY.md),
+alongside the refused
+[phase 30 RESTORATION](docs/agent-work/reliability/phase30/RESTORATION.md) page
+and its independent recheck.
+
+**Accounting held in fact, not in the record.** A first launch was killed by the
+tool harness when its shell session ended, after it had charged seven native
+transactions and written no campaign record: five on the first unvisited link
+(its full five-rung ladder, every record entered and none committed) and two on
+the second, one recorded plus one reserved-but-unsettled charge with no record
+at all. Replacing the ledger would have been the reset the rule forbids, so the
+continuation ran from the same ledger; the cumulative counter therefore held at
+55 while the continuation's own record accounts for 48. The frozen record fails
+the accepted limiter's own `validate_campaign_record` and
+`reconcile_resume_charges` for exactly that reason - it declares 55 cumulative
+transactions while its link history accounts for 48 - so it cannot serve as a
+resume base, and read-only evidence cannot repair it.
+
+**Verified independently, and refused.** T30R2V re-hashed every frozen artefact
+and protected input, recounted the charges, and re-measured the boards with
+fresh processes and the complete pinned CLI gates. Accounting passed: 55
+cumulative charges across 12 links, at most five on any link, the seven
+killed-launch charges reconstructed exactly, and 46 of 46 resumed rejections
+with valid receipts. The two retained joins are clean against their immediate
+parents and their complete CLI gates verify; the final candidate is clean
+against the phase-25 refilled baseline, but adds nineteen relevant native
+identities (all in the single isolated-copper class) and eighteen terminal split
+relations against both the accepted generation and the canonical original, and
+both complete CLI gates refuse. Attribution is settled: the frozen T30R start
+board already carries the same nineteen identities and a twenty-one split
+relation count, and the final candidate is clean against that start, so T30R2
+introduced none of the deviation. **Promotion eligibility: not met**, and the
+accepted pointer was re-hashed unchanged.
+
+**The rollback claim is corrected here, append-only.** Where the campaign's own
+report described every rejected transaction as carrying a proven rollback and
+reported no quarantine, that blanket statement is not what the frozen evidence
+supports. All 46 rejections in the resumed run carry a receipt - `restored:
+true`, `matches_baseline: true`, an equal geometry digest and a complete
+terminal proof - and both retained joins pass every saved-bytes check. The seven
+charges from the killed launch do not: six settled ledger records and one
+reserved charge with no record carry no per-attempt receipt, because the process
+died before it could write one. What is proved for them is the frozen start and
+the restart isolation - the frozen start board is byte-unchanged, the resumed run
+re-staged from it and spent zero charges on its first link, and no candidate
+directory exists for the killed launch's links - and nothing about their
+per-attempt rollback: whether the killed attempts changed copper is unknown
+rather than disproved. The criterion requiring a proven rollback for every
+rejection (A30R2-3) is therefore unmet, and the author campaign stands at
+REQUEST_CHANGES; the independent acceptance covers the diagnosis and accounting,
+not the campaign. No earlier entry is edited by this note, and no broad rollback
+proof is claimed over the whole campaign.
+
+**Disposition.** The campaign is quarantined at 55/60 with no promotion: do not
+resume from the frozen record, and do not reset or re-bind the ledger. The
+phase-31 successor work is the guard, not a new campaign - a fail-closed refusal
+for a pre-charged, unbound ledger before any write or engine open, plus a
+validation that the full cumulative and per-link history is complete before a
+record is published or bound. Durable journaling is a design-only proposal
+alongside that guard. Any further routing needs a separately Astra-reviewed
+bounded plan, under the user's existing authorisation.
+
+**Two phase-30 attribution clarifications (T30N / T30NV), clearly attributed.**
+The accepted native-identity attribution study registered thirteen inputs that
+carry no `declared_by` entry in any declaration its verifier traverses: eight
+raw measurement work files, three declaration documents and two frozen
+summaries. Only the eight raw work files are measurement gaps; the other five
+are documents or summaries present in the registry without a declaring entry.
+Separately, the verifier's revision-3 addendum found the live freeze's
+machine-readable `supersedes` list names only the first archived revision, so an
+automated chain walk skips the revision that was actually reviewed - every byte
+of it is preserved in the packet's own archive with its own supersession record,
+and no derivation, input, board, rule, pointer or count moved. Closing that gap
+is documentation-only: name both archived revisions in the live freeze's
+supersedes block.
+
+No board, rule, project, accepted pointer, pinned binary, private input or
+earlier journal entry was edited to write this entry, and no measurement was
+re-run for it. Aggregates only: no board geometry, net name, component
+reference, coordinate, board hash or absolute path appears above.
+
+## 2026-09-29 — phase 32: the bounded-transaction ledger and the interruption guard, promoted to the public harness
+
+* Added `pcb_world/agent/ledger.py`: the bounded native-transaction ledger for a
+  routing campaign. Four hard ceilings - five native transactions per stable
+  logical link, twelve distinct anchor pairs per link, twelve links per campaign
+  and sixty transactions per campaign - validated at construction, on restore
+  from disk, and again on every reservation and pair offer, so a raised ceiling
+  in a file or in a mutated object is refused rather than honoured. A charge is
+  written through to disk before the caller issues its native call and is
+  cumulative across resumes, never reset. Alias declarations are symmetric and
+  budget-conserving: counters add, anchor sets union, and a merge that would
+  break a ceiling or combine two different retained joins is refused with the
+  equivalence rolled back. Resume reconciliation is cumulative *and* per
+  canonical link, so a missing link, a redistributed count, a parked charge or a
+  disagreeing total is refused.
+* Added `pcb_world/agent/interruption_guard.py`: the fail-closed guard for an
+  interrupted campaign. `interruption_guard_preflight_campaign` is the composed,
+  file-facing entry point - it reads and hashes the record and the parent board
+  the record declares, requires the record's named ledger to be the ledger being
+  preflighted, requires a `current-record` binding or the permitted
+  `interrupted-finalization` predecessor binding, stages alias declarations in
+  memory and only then reconciles, all before the caller's first `mkdir`, first
+  write or first engine open. `completed_record_gate` validates the whole
+  cumulative and per-link history before a record is published or bound, and
+  `publish_completed_record` makes publication and binding one guarded step. The
+  pure helpers (`preflight_ledger`, `classify_ledger`, `charge_attribution`) stay
+  low-level and are deliberately not re-exported from the package root: their
+  `resume_safe`/`complete` flags are accounting statements, not identity checks
+  and not permission to route.
+* The two modules were promoted from accepted private packets for the same
+  lineage, with the logic kept byte-identical where it could be and only the
+  private provenance removed: no board path, task identifier or private checkout
+  path appears in either public module, and the persisted schema tags are carried
+  unchanged so a ledger written by the accepted limiter still loads.
+* Added `tests/agent/test_ledger_unit.py` (21 tests) and
+  `tests/agent/test_interruption_guard.py` (20 tests), engine-free and wired into
+  the combined unit group of `tools/reliability/check_phase.py`. Together they
+  cover all four ceilings, persistence and reloads, alias merges and rollback,
+  no-charge resets, interrupted and unbound evidence, missing records, extra
+  settled and unsettled charges, redistribution at equal totals, malformed and
+  wrong-identity inputs, the positive fresh, resumed and interrupted-finalization
+  paths, and byte-for-byte snapshots proving that every refusal writes nothing
+  and opens no engine.
+* Mutation-checked: each test module runs its invariant battery against 19
+  (ledger) and 13 (guard) deliberately broken copies of the source in a fresh
+  interpreter, and fails if the battery accepts a mutation. All 32 were caught.
+  Six initially escaped, and each escape is a weakness the tests had rather than
+  a weakness the modules have. The ledger's missing-link and parked-charge
+  checks were being satisfied by a later cumulative backstop, so the checks now
+  assert the refusal's own reason rather than only that something was refused;
+  one ledger mutation was behaviourally inert, because the charge write-through
+  happens on two paths, so it was replaced with an observable one and the
+  direct-budget persistence path got its own invariant; and the guard's three
+  were a missing invariant for an inconsistent attribution, a check that
+  accepted either refusal message, and a fixture that invalidated the record
+  digest so the binding check refused first.
+* Corrected `EXPECTED_NATIVE_TESTS` in `tools/reliability/check_phase.py` from
+  144 to 146, from a fresh `pytest --collect-only` over the native group ("146
+  tests collected"): 144 would have let two native tests disappear unnoticed. The
+  number is set from a collection count only, never from a run's summary line.
+* Version: `pyproject.toml` moves from `1.1.0` to `1.2.0` and the `README.md`
+  `<!--VERSION-->` marker moves to `v1.2.0` with it. The public phase document is
+  `docs/agent-work/reliability/phase32/INTEGRATION.md`.
+* No board, rule, project, accepted pointer, frozen input, routing budget or
+  earlier journal entry was edited to write this entry, and no routing was run
+  for it. The ledger is a single-writer store: it persists by writing the whole
+  file and does not serialise two processes against one path. Durable journaling
+  remains design-only and unimplemented, and the binding advance trusts the
+  predecessor digest its caller supplies, which is why the composed preflight is
+  the only path that should drive it. Aggregates only: no board geometry, net
+  name, component reference, coordinate, board hash or absolute path appears
+  above.
+
+## 2026-09-29 — phase 32 correction 1: the publication API verified lineage and identity before it wrote
+
+* Review of the phase-32 integration by the appointed reviewer (Sol high)
+  returned REQUEST_CHANGES on `publish_completed_record`, and the finding was
+  correct on both counts. The function gated the accounting and then wrote the
+  record before advancing the binding, passing `head_predecessor` as the current
+  binding; in `LinkLedger.advance_campaign` that made any predecessor digest
+  absent from the chain qualify as an interrupted finalization, so a digest the
+  caller simply invented was inserted into the chain and the new record bound. An
+  older digest already in the chain instead failed the advance only *after* the
+  record had been written, which could overwrite an existing record. Publication
+  also checked only that `ledger_file` and `final_parent_dir` were non-empty and
+  the declared parent digest was 64 characters: it did not check the named ledger
+  against the live ledger's own path and did not hash the parent board, so a
+  fully accounted record could be published and bound with an identity the next
+  composed resume preflight would refuse.
+* The correction moves every one of those decisions ahead of the first `mkdir`
+  and the first write. The record's named `ledger_file` and the parent board's
+  actual bytes are now checked by `_verify_record_identity`, the same helper the
+  composed preflight uses, so the two paths cannot disagree about whether an
+  identity is real. A continuation must supply `previous_record_path`, the file
+  of the record it continues, and that file must exist and hash to the digest the
+  new record declares, so a digest with no bytes behind it cannot qualify. The
+  predecessor must then be either the ledger's current binding - the normal
+  advance - or a genuinely verified interrupted finalization through the shared
+  `_is_interrupted_finalization` predicate, which requires that record's own
+  declared predecessor to be the binding and the binding to be the head of the
+  chain. An older in-chain digest is refused explicitly as an old record, and a
+  binding chain that does not end at its current record is refused as broken,
+  both before any write. The ledger's `advance_campaign` docstring now states the
+  limit it always had - it trusts its caller's predecessor digest because it
+  cannot open a record file - and names the verified publication path as the one
+  that may drive a continuation.
+* Both lawful paths are retained and re-proven: the normal current-record
+  continuation (the end-to-end sequence test) and a genuinely verified
+  interrupted finalization, which publishes with `binding_kind`
+  `interrupted-finalization` and extends the chain in order with the record that
+  was written but never bound.
+* Four refusal families were added as named tests, each with a byte-for-byte
+  canary over an existing record path, its containing directory and the ledger
+  file, plus a process tripwire and an engine sentinel: an unrelated new
+  predecessor, an older in-chain predecessor, a wrong named ledger, and wrong or
+  missing parent bytes. Eight further sub-cases are covered inside those tests
+  (an invented digest with no file, a file that does not hash to the declared
+  digest, and a chain that does not end at its binding). The mutation battery
+  grew from 32 to 37, adding eight mutations for the new checks, and all 37 are
+  caught.
+* Verification on the corrected revision: 46 focused tests pass; the unit group
+  is 686 passed and 686 collected; the native group collects and passes 146 with
+  zero skips; the strict harness exits 0 with the patch group reproducing the
+  engine tree; and the canary evidence records eight refused publications with
+  every canary identical, zero process starts and zero engine opens.
+* One cross-packet consequence, recorded rather than fixed: the independent
+  verifier's lawful-publication fixture declares a `final_parent_dir` that holds
+  no board, so under the corrected contract it refuses, which is the required
+  behaviour. That packet owns its fixtures and this task did not edit it.
+* This entry is appended. Earlier T32P entries above are unchanged, and no board,
+  rule, project, accepted pointer, frozen input, routing budget or earlier
+  journal entry was edited to write it. Aggregates only: no board geometry, net
+  name, component reference, coordinate, board hash or absolute path appears
+  above.
+
+## 2026-09-29 — phase 32 correction 2: the record a publication continues must be a campaign record
+
+* The second review by the appointed reviewer (Sol high) returned
+  REQUEST_CHANGES on one remaining gap in the corrected publication API, and the
+  finding was correct. Correction 1 made `publish_completed_record` hash the
+  supplied predecessor's bytes against the digest the new record declared, and
+  check that predecessor's own declared lineage - but `_read_record` only
+  requires a JSON *object*. A file containing nothing but
+  `{"previous_record_sha256": "<current binding digest>"}` therefore hashed to a
+  digest the caller could declare as the predecessor, satisfied the
+  interrupted-finalization predicate, and could extend the chain and have the new
+  record bound, while the composed preflight - which runs
+  `validate_campaign_record` and `_verify_record_identity` before accepting an
+  interrupted record - would never have accepted those same bytes as a resume.
+* Correction 2 runs the limiter's own `validate_campaign_record` and the shared
+  `_verify_record_identity` on the supplied predecessor file before the first
+  `mkdir` and the first write, so the predecessor must be a completed campaign
+  record for *this* ledger carrying the parent bytes it declares. The checks are
+  applied on both continuation paths, not only the interrupted one, because the
+  preflight validates whatever record it resumes from in both cases; the digest
+  comparison still runs first, so an unverified digest keeps naming that reason,
+  and the lineage predicate still runs last, so an unrelated but well-formed
+  predecessor keeps naming its own. The publication verdict gained
+  `predecessor_identity` (additive) so the caller can see what was verified.
+* Three predecessor-validation families were added as named tests, each with the
+  byte-for-byte canary over an existing target record path, its containing
+  directory, the ledger file and the binding, plus a process tripwire and an
+  engine sentinel: a malformed predecessor (the reviewer's bare-object case,
+  which now refuses with "is not a completed campaign record"), a predecessor
+  naming a different ledger, and a predecessor carrying wrong parent bytes or a
+  missing parent directory. The canary evidence covers twelve refusal scenarios
+  in total, all clean.
+* No round-1 behaviour moved, and that is checked rather than asserted: the
+  frozen round-2 verifier's own 24 fixtures were re-run against this revision and
+  all 24 pass, including its normal-continuation and genuinely-verified
+  interrupted-finalization positive controls, and the four round-1 publication
+  refusal families still refuse for the same reasons.
+* Verification on the corrected revision: 49 focused tests pass; the unit group
+  is 689 passed and 689 collected; the native group collects and passes 146 with
+  zero skips; the strict harness exits 0 with the patch group reproducing the
+  engine tree; the mutation battery is 39/39 (19 ledger, 20 guard, two of them
+  new for the predecessor checks); and the canary evidence records twelve refused
+  publications with every canary identical, zero process starts and zero engine
+  opens.
+* This entry is appended. Earlier T32P entries above are unchanged, and no board,
+  rule, project, accepted pointer, frozen input, routing budget or earlier
+  journal entry was edited to write it. Aggregates only: no board geometry, net
+  name, component reference, coordinate, board hash or absolute path appears
+  above.

@@ -58,6 +58,8 @@ UNIT_TESTS = [
     "tests/agent/test_free_via_search.py",
     "tests/agent/test_planner_client.py",
     "tests/agent/test_integration_gaps.py",
+    "tests/agent/test_interruption_guard.py",
+    "tests/agent/test_ledger_unit.py",
     "tests/agent/test_phase3_integrity.py",
     "tests/agent/test_cli_gate.py",
     "tests/agent/test_terminals.py",
@@ -95,7 +97,12 @@ PATCH_CHECK = "tools/reliability/check_engine_patches.py"
 # The native group must execute at least this many tests in strict mode. Bump it
 # when native coverage grows; the gate is here so a collection/load failure cannot
 # masquerade as a pass.
-EXPECTED_NATIVE_TESTS = 144
+#
+# 146, not the 144 this file carried: `pytest --collect-only` over NATIVE_TESTS
+# collects 146 here ("146 tests collected"), so 144 would let two native tests
+# disappear unnoticed. A collection count is the only thing this number may be
+# set from - never from a run's summary line.
+EXPECTED_NATIVE_TESTS = 146
 
 _COUNT_RE = re.compile(r"(\d+) (passed|failed|skipped|error|errors|deselected|warning|warnings)")
 _LOAD_FAILURE_MARKERS = (
